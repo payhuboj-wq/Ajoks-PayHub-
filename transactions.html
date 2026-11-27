@@ -1,0 +1,236 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080f1d">
+  <title>Transactions | Ajoks PayHub</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding-bottom: 100px;
+      background: #080f1d;
+      color: #f3f6fc;
+      font-family: Arial, sans-serif;
+    }
+
+    .page {
+      max-width: 700px;
+      margin: auto;
+      padding: 24px 17px;
+    }
+
+    a {
+      color: #a8c5ff;
+      text-decoration: none;
+    }
+
+    h1 { margin-top: 28px; }
+
+    .subtitle {
+      color: #94a5bd;
+      line-height: 1.6;
+    }
+
+    .summary {
+      background: #2448b5;
+      border-radius: 20px;
+      padding: 24px;
+      margin: 25px 0;
+    }
+
+    .summary p {
+      color: #d4e1ff;
+      margin: 0 0 12px;
+    }
+
+    .summary h2 {
+      margin: 0;
+      font-size: 32px;
+    }
+
+    .panel {
+      background: #0e192a;
+      border: 1px solid #20314e;
+      border-radius: 20px;
+      padding: 20px;
+    }
+
+    .filters {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    select, input {
+      min-width: 0;
+      width: 100%;
+      padding: 12px;
+      border-radius: 9px;
+      border: 1px solid #30435f;
+      background: #080f1d;
+      color: white;
+      font-size: 14px;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 35px 10px;
+    }
+
+    .empty-icon {
+      font-size: 42px;
+      color: #3475ff;
+    }
+
+    .empty h2 {
+      font-size: 20px;
+    }
+
+    .empty p {
+      color: #94a5bd;
+      line-height: 1.6;
+    }
+
+    .button {
+      display: block;
+      text-align: center;
+      padding: 14px;
+      margin-top: 20px;
+      background: #2864f0;
+      border-radius: 12px;
+      color: white;
+      font-weight: bold;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: space-around;
+      background: #0e192a;
+      border-top: 1px solid #20314e;
+      padding: 13px 4px calc(13px + env(safe-area-inset-bottom));
+    }
+
+    .nav-item {
+      text-align: center;
+      color: #65758e;
+      font-size: 12px;
+      flex: 1;
+    }
+
+    .nav-item span {
+      display: block;
+      font-size: 22px;
+      margin-bottom: 6px;
+    }
+
+    .nav-item.active { color: #3475ff; }
+
+    @media (max-width: 360px) {
+      .filters { flex-direction: column; }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page">
+    <a href="fund-wallet.html">← Back to Wallet</a>
+
+    <h1>Transaction History</h1>
+    <p class="subtitle">
+      Review your wallet deposits, purchases and other transactions.
+    </p>
+
+    <section class="summary">
+      <p>Total transactions displayed</p>
+      <h2 id="count">0</h2>
+    </section>
+
+    <section class="panel">
+      <div class="filters">
+        <select id="typeFilter" aria-label="Filter by transaction type">
+          <option value="all">All transactions</option>
+          <option value="deposit">Deposits</option>
+          <option value="purchase">Purchases</option>
+        </select>
+
+        <input id="search" type="search"
+          placeholder="Search reference..."
+          aria-label="Search transaction reference">
+      </div>
+
+      <div class="empty">
+        <div class="empty-icon">◷</div>
+        <h2 id="emptyTitle">No Transactions Yet</h2>
+        <p id="emptyText">
+          Your transaction history will appear here when transactions
+          are connected to your account.
+        </p>
+        <a class="button" href="fund-wallet.html">Fund My Wallet</a>
+      </div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav">
+    <a class="nav-item" href="dashboard.html">
+      <span>⌂</span>Home
+    </a>
+    <a class="nav-item" href="buy-data.html">
+      <span>▯</span>Numbers
+    </a>
+    <a class="nav-item" href="subscriptions.html">
+      <span>↗</span>Boost
+    </a>
+    <a class="nav-item" href="fund-wallet.html">
+      <span>▤</span>Wallet
+    </a>
+    <a class="nav-item" href="profile.html">
+      <span>♙</span>Profile
+    </a>
+  </nav>
+
+  <script>
+    // No transaction records are connected yet.
+    // Real records must be loaded securely from your backend.
+    const transactions = [];
+
+    function renderTransactions() {
+      const type = document.getElementById("typeFilter").value;
+      const search = document.getElementById("search").value.trim().toLowerCase();
+
+      const filtered = transactions.filter(transaction => {
+        const matchesType = type === "all" || transaction.type === type;
+        const matchesSearch = (transaction.reference || "")
+          .toLowerCase().includes(search);
+        return matchesType && matchesSearch;
+      });
+
+      document.getElementById("count").textContent = filtered.length;
+
+      document.getElementById("emptyTitle").textContent =
+        filtered.length ? "Transactions Found" : "No Transactions Yet";
+
+      document.getElementById("emptyText").textContent =
+        filtered.length
+          ? "Your matching transactions are listed here."
+          : "No matching records are available. Transaction history will appear when your account is connected to the backend.";
+    }
+
+    document.getElementById("typeFilter")
+      .addEventListener("change", renderTransactions);
+
+    document.getElementById("search")
+      .addEventListener("input", renderTransactions);
+
+    renderTransactions();
+  </script>
+</body>
+</html>
