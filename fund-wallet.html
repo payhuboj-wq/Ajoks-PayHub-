@@ -1,0 +1,336 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080f1d">
+  <title>Fund Wallet | Ajoks PayHub</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #080f1d;
+      --panel: #0e192a;
+      --border: #20314e;
+      --blue: #2864f0;
+      --text: #f3f6fc;
+      --muted: #94a5bd;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+      padding-bottom: 105px;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .page {
+      width: 100%;
+      max-width: 800px;
+      margin: auto;
+      padding: 22px 16px;
+    }
+
+    .wallet-card {
+      position: relative;
+      overflow: hidden;
+      background: #2448b5;
+      border-radius: 28px;
+      padding: 35px 25px;
+      min-height: 250px;
+      margin-bottom: 30px;
+    }
+
+    .wallet-card::after {
+      content: "";
+      position: absolute;
+      width: 230px;
+      height: 230px;
+      right: -45px;
+      top: -65px;
+      border: 55px solid rgba(255,255,255,.055);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      color: #c8dcff;
+      font-size: 14px;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    .balance {
+      font-size: clamp(36px, 9vw, 52px);
+      font-weight: 800;
+      margin: 25px 0;
+      letter-spacing: -1px;
+    }
+
+    .wallet-message {
+      color: #e0e9ff;
+      font-size: 16px;
+      line-height: 1.6;
+      max-width: 430px;
+      margin-bottom: 0;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 27px;
+      padding: 24px 20px;
+      margin-bottom: 24px;
+    }
+
+    .panel-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 20px;
+      font-weight: bold;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .blue-icon {
+      color: #3475ff;
+      font-size: 25px;
+    }
+
+    .account-empty {
+      text-align: center;
+      padding: 35px 0 10px;
+    }
+
+    .account-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 86px;
+      height: 86px;
+      border-radius: 28px;
+      background: #122343;
+      color: #3475ff;
+      font-size: 39px;
+      margin-bottom: 12px;
+    }
+
+    .account-empty h2 {
+      font-size: 21px;
+      margin: 15px 0;
+    }
+
+    .account-empty p {
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.55;
+      margin: 0 auto 28px;
+      max-width: 430px;
+    }
+
+    .primary-btn {
+      display: block;
+      width: 100%;
+      padding: 17px 12px;
+      border: 0;
+      border-radius: 19px;
+      background: var(--blue);
+      color: white;
+      text-align: center;
+      font-size: 17px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .primary-btn:active {
+      opacity: .85;
+    }
+
+    .steps-title {
+      color: #8292ac;
+      font-size: 15px;
+      letter-spacing: 1px;
+    }
+
+    .steps {
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.8;
+      padding-left: 25px;
+      margin-bottom: 0;
+    }
+
+    .steps li {
+      padding: 5px 0;
+    }
+
+    .history-link {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      padding: 23px 18px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 17px;
+      font-weight: bold;
+    }
+
+    .history-link .arrow {
+      margin-left: auto;
+      color: var(--muted);
+      font-size: 25px;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 10;
+      background: #0e192a;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      padding: 12px 4px calc(12px + env(safe-area-inset-bottom));
+    }
+
+    .nav-item {
+      flex: 1;
+      text-align: center;
+      color: #65758e;
+      font-size: 12px;
+      font-weight: bold;
+      padding: 4px 0;
+    }
+
+    .nav-icon {
+      display: block;
+      font-size: 23px;
+      margin-bottom: 7px;
+    }
+
+    .nav-item.active {
+      color: #3475ff;
+    }
+
+    @media (min-width: 600px) {
+      .page {
+        padding: 35px 24px;
+      }
+
+      .panel {
+        padding: 28px;
+      }
+
+      .wallet-card {
+        padding: 40px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page">
+
+    <section class="wallet-card">
+      <div class="eyebrow">CURRENT WALLET BALANCE</div>
+      <div class="balance">₦0.00</div>
+      <p class="wallet-message">
+        Fund your Ajoks PayHub wallet securely and conveniently.
+      </p>
+    </section>
+
+    <section class="panel">
+      <div class="panel-title">
+        <span class="blue-icon">▤</span>
+        <span>Instant Bank Transfer</span>
+      </div>
+
+      <div class="account-empty">
+        <div class="account-icon">▤</div>
+        <h2>No Virtual Account Assigned</h2>
+        <p>
+          Generate your dedicated bank account number for
+          convenient deposits and automatic wallet funding.
+        </p>
+
+        <button class="primary-btn" id="createAccount">
+          ⊕ &nbsp; Create Virtual Account
+        </button>
+
+        <p style="font-size:12px; margin-top:16px;">
+          Virtual account service must be connected before this feature works.
+        </p>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-title">
+        <span class="blue-icon">ⓘ</span>
+        <span class="steps-title">DEPOSIT STEPS</span>
+      </div>
+
+      <ol class="steps">
+        <li>Open your banking app or USSD portal.</li>
+        <li>Transfer money to your assigned Ajoks PayHub deposit account.</li>
+        <li>Your wallet balance will update after payment is verified by the connected payment provider.</li>
+      </ol>
+    </section>
+
+    <a class="history-link" href="transactions.html">
+      <span class="blue-icon">◷</span>
+      <span>View Transaction History</span>
+      <span class="arrow">›</span>
+    </a>
+
+  </main>
+
+  <nav class="bottom-nav">
+    <a class="nav-item" href="dashboard.html">
+      <span class="nav-icon">⌂</span>
+      Home
+    </a>
+
+    <a class="nav-item" href="buy-data.html">
+      <span class="nav-icon">▯</span>
+      Numbers
+    </a>
+
+    <a class="nav-item" href="subscriptions.html">
+      <span class="nav-icon">↗</span>
+      Boost
+    </a>
+
+    <a class="nav-item active" href="fund-wallet.html">
+      <span class="nav-icon">▤</span>
+      Wallet
+    </a>
+
+    <a class="nav-item" href="profile.html">
+      <span class="nav-icon">♙</span>
+      Profile
+    </a>
+  </nav>
+
+  <script>
+    document.getElementById("createAccount").addEventListener("click", function() {
+      alert(
+        "Virtual account creation is not connected yet. " +
+        "Connect a supported payment provider and secure backend to enable it."
+      );
+    });
+  </script>
+</body>
+</html>
