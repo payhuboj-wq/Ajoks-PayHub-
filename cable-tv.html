@@ -1,0 +1,157 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080f1d">
+  <title>Cable TV | Ajoks PayHub</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 20px 16px 40px;
+      background: #080f1d;
+      color: #f3f6fc;
+      font-family: Arial, sans-serif;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 20px auto;
+    }
+
+    a {
+      color: #a8c5ff;
+      text-decoration: none;
+    }
+
+    .card {
+      background: #0e192a;
+      border: 1px solid #20314e;
+      border-radius: 20px;
+      padding: 24px 20px;
+      margin-top: 25px;
+    }
+
+    h1 { color: #75a1ff; }
+
+    .subtitle {
+      color: #94a5bd;
+      line-height: 1.6;
+    }
+
+    label {
+      display: block;
+      margin: 18px 0 8px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid #30435f;
+      border-radius: 10px;
+      background: #080f1d;
+      color: white;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 24px;
+      padding: 15px;
+      border: none;
+      border-radius: 12px;
+      background: #2864f0;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .notice {
+      color: #94a5bd;
+      font-size: 13px;
+      line-height: 1.6;
+      margin-top: 18px;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="container">
+    <a href="dashboard.html">← Back to Dashboard</a>
+
+    <section class="card">
+      <h1>Cable TV Subscription</h1>
+      <p class="subtitle">
+        Renew your television subscription through Ajoks PayHub.
+      </p>
+
+      <form id="cableForm">
+        <label for="provider">TV Provider</label>
+        <select id="provider" required>
+          <option value="">Choose provider</option>
+          <option value="DSTV">DStv</option>
+          <option value="GOTV">GOtv</option>
+          <option value="STARTIMES">StarTimes</option>
+        </select>
+
+        <label for="smartcard">Smartcard / IUC Number</label>
+        <input
+          id="smartcard"
+          type="text"
+          inputmode="numeric"
+          pattern="[0-9]{5,20}"
+          maxlength="20"
+          placeholder="Enter decoder number"
+          required
+        >
+
+        <label for="package">Subscription Package</label>
+        <select id="package" required>
+          <option value="">Choose a package</option>
+          <option value="basic">Basic</option>
+          <option value="standard">Standard</option>
+          <option value="premium">Premium</option>
+        </select>
+
+        <label for="amount">Amount (₦)</label>
+        <input
+          id="amount"
+          type="number"
+          min="1"
+          step="1"
+          placeholder="Enter provider's package price"
+          required
+        >
+
+        <button type="submit">Continue</button>
+
+        <p class="notice">
+          Demo only. Confirmed provider packages, prices, smartcard
+          verification and payments require a connected service provider.
+          No subscription will be purchased by this form.
+        </p>
+      </form>
+    </section>
+  </main>
+
+  <script>
+    document.getElementById("cableForm").addEventListener("submit", function(event) {
+      event.preventDefault();
+
+      const smartcard = document.getElementById("smartcard").value.trim();
+      const amount = Number(document.getElementById("amount").value);
+
+      if (!/^[0-9]{5,20}$/.test(smartcard) || amount < 1) {
+        alert("Please check the smartcard number and amount.");
+        return;
+      }
+
+      alert("Your details are valid. Cable TV purchases will work after provider and payment integration.");
+    });
+  </script>
+</body>
+</html>
