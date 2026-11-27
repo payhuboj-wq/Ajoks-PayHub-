@@ -1,0 +1,175 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Electricity Payment | Ajoks PayHub</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #07111f;
+      color: #ffffff;
+      font-family: Arial, sans-serif;
+    }
+
+    .container {
+      max-width: 480px;
+      margin: 20px auto;
+    }
+
+    .back {
+      color: #62a5ff;
+      text-decoration: none;
+      display: inline-block;
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      font-size: 27px;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: #a8b7ca;
+      margin-bottom: 25px;
+      line-height: 1.5;
+    }
+
+    .card {
+      background: #101e31;
+      border: 1px solid #233650;
+      border-radius: 16px;
+      padding: 22px;
+    }
+
+    label {
+      display: block;
+      margin: 18px 0 8px;
+      font-size: 14px;
+      color: #dce8f8;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid #344963;
+      border-radius: 9px;
+      background: #091525;
+      color: white;
+      font-size: 15px;
+      outline: none;
+    }
+
+    input:focus, select:focus {
+      border-color: #3988ff;
+    }
+
+    button {
+      width: 100%;
+      padding: 15px;
+      margin-top: 24px;
+      background: #2878f0;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .notice {
+      color: #9fb2ca;
+      font-size: 12px;
+      line-height: 1.5;
+      margin-top: 16px;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="container">
+    <a class="back" href="dashboard.html">← Back to Dashboard</a>
+
+    <h1>Electricity Payment</h1>
+    <p class="subtitle">
+      Pay your electricity bill through Ajoks PayHub.
+    </p>
+
+    <section class="card">
+      <form id="electricityForm">
+        <label for="disco">Electricity Provider</label>
+        <select id="disco" required>
+          <option value="">Select provider</option>
+          <option value="IKEDC">IKEDC</option>
+          <option value="EKEDC">EKEDC</option>
+          <option value="AEDC">AEDC</option>
+          <option value="IBEDC">IBEDC</option>
+          <option value="KEDCO">KEDCO</option>
+          <option value="PHED">PHED</option>
+          <option value="JED">JED</option>
+          <option value="KAEDCO">KAEDCO</option>
+          <option value="BEDC">BEDC</option>
+          <option value="EEDC">EEDC</option>
+        </select>
+
+        <label for="meterType">Meter Type</label>
+        <select id="meterType" required>
+          <option value="">Select meter type</option>
+          <option value="prepaid">Prepaid</option>
+          <option value="postpaid">Postpaid</option>
+        </select>
+
+        <label for="meterNumber">Meter Number</label>
+        <input
+          type="text"
+          id="meterNumber"
+          placeholder="Enter meter number"
+          inputmode="numeric"
+          required
+        >
+
+        <label for="amount">Amount (₦)</label>
+        <input
+          type="number"
+          id="amount"
+          placeholder="Enter amount"
+          min="1"
+          step="1"
+          required
+        >
+
+        <button type="submit">Continue</button>
+
+        <p class="notice">
+          Demo form only. No payment will be processed until a
+          payment provider and backend are connected.
+        </p>
+      </form>
+    </section>
+  </main>
+
+  <script>
+    document.getElementById("electricityForm").addEventListener("submit", function(event) {
+      event.preventDefault();
+
+      const disco = document.getElementById("disco").value;
+      const meterType = document.getElementById("meterType").value;
+      const meterNumber = document.getElementById("meterNumber").value.trim();
+      const amount = Number(document.getElementById("amount").value);
+
+      if (!disco || !meterType || !meterNumber || !Number.isFinite(amount) || amount < 1) {
+        alert("Please complete all fields correctly.");
+        return;
+      }
+
+      alert("Your form is complete. Electricity payments are not yet connected.");
+    });
+  </script>
+</body>
+</html>
