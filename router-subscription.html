@@ -1,0 +1,157 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Router Subscription | Ajoks PayHub</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #07111f;
+      color: #fff;
+      font-family: Arial, sans-serif;
+    }
+
+    .container {
+      max-width: 480px;
+      margin: 20px auto;
+    }
+
+    .back {
+      display: inline-block;
+      margin-bottom: 24px;
+      color: #62a5ff;
+      text-decoration: none;
+    }
+
+    h1 {
+      font-size: 27px;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: #a8b7ca;
+      line-height: 1.5;
+      margin-bottom: 25px;
+    }
+
+    .card {
+      padding: 22px;
+      background: #101e31;
+      border: 1px solid #233650;
+      border-radius: 16px;
+    }
+
+    label {
+      display: block;
+      margin: 18px 0 8px;
+      color: #dce8f8;
+      font-size: 14px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 14px;
+      background: #091525;
+      color: white;
+      border: 1px solid #344963;
+      border-radius: 9px;
+      font-size: 15px;
+    }
+
+    button {
+      width: 100%;
+      padding: 15px;
+      margin-top: 24px;
+      background: #2878f0;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .notice {
+      color: #9fb2ca;
+      font-size: 12px;
+      line-height: 1.5;
+      margin-top: 16px;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="container">
+    <a class="back" href="dashboard.html">← Back to Dashboard</a>
+
+    <h1>Router Subscription</h1>
+    <p class="subtitle">
+      Choose your internet provider and subscription plan.
+    </p>
+
+    <section class="card">
+      <form id="routerForm">
+        <label for="provider">Internet Provider</label>
+        <select id="provider" required>
+          <option value="">Select provider</option>
+          <option value="MTN">MTN Router</option>
+          <option value="Airtel">Airtel Router</option>
+          <option value="Glo">Glo Router</option>
+          <option value="9mobile">9mobile Router</option>
+          <option value="Spectranet">Spectranet</option>
+          <option value="Smile">Smile</option>
+          <option value="Other">Other provider</option>
+        </select>
+
+        <label for="account">Router Number or Account ID</label>
+        <input
+          type="text"
+          id="account"
+          placeholder="Enter router number or account ID"
+          required
+        >
+
+        <label for="plan">Subscription Plan</label>
+        <select id="plan" required>
+          <option value="">Select a plan</option>
+          <option value="Plan 1">Plan 1 — choose price after provider setup</option>
+          <option value="Plan 2">Plan 2 — choose price after provider setup</option>
+          <option value="Plan 3">Plan 3 — choose price after provider setup</option>
+        </select>
+
+        <button type="submit">Continue</button>
+
+        <p class="notice">
+          Demo only. Provider plans, prices and payments are not yet connected.
+          Confirm the correct account details before any real purchase.
+        </p>
+      </form>
+    </section>
+  </main>
+
+  <script>
+    document.getElementById("routerForm").addEventListener("submit", function(event) {
+      event.preventDefault();
+
+      const provider = document.getElementById("provider").value;
+      const account = document.getElementById("account").value.trim();
+      const plan = document.getElementById("plan").value;
+
+      if (!provider || !account || !plan) {
+        alert("Please complete all fields.");
+        return;
+      }
+
+      alert("Your details are complete. Router subscriptions are not yet connected to a provider.");
+    });
+  </script>
+</body>
+</html>
