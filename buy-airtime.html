@@ -1,0 +1,108 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Buy Airtime | Ajoks PayHub</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #100d18;
+      color: #f5f3fa;
+      font-family: Arial, sans-serif;
+    }
+    .container {
+      max-width: 480px;
+      margin: 30px auto;
+    }
+    a { color: #c5a7ff; text-decoration: none; }
+    .card {
+      background: #1d1928;
+      border: 1px solid #55436f;
+      border-radius: 18px;
+      padding: 22px;
+      margin-top: 22px;
+    }
+    h1 { color: #c5a7ff; }
+    label {
+      display: block;
+      margin: 17px 0 8px;
+    }
+    input, select {
+      width: 100%;
+      padding: 13px;
+      border-radius: 9px;
+      border: 1px solid #76658b;
+      background: #100d18;
+      color: white;
+      font-size: 16px;
+    }
+    button {
+      width: 100%;
+      margin-top: 22px;
+      padding: 14px;
+      border: none;
+      border-radius: 9px;
+      background: #9b6dff;
+      color: #100d18;
+      font-size: 16px;
+      font-weight: bold;
+    }
+    .note { color: #c5c0ce; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="dashboard.html">← Back to Dashboard</a>
+
+    <div class="card">
+      <h1>Buy Airtime</h1>
+      <p>Recharge any supported Nigerian network.</p>
+
+      <form id="airtimeForm">
+        <label for="network">Select Network</label>
+        <select id="network" required>
+          <option value="">Choose network</option>
+          <option value="MTN">MTN</option>
+          <option value="Airtel">Airtel</option>
+          <option value="Glo">Glo</option>
+          <option value="9mobile">9mobile</option>
+        </select>
+
+        <label for="phone">Phone Number</label>
+        <input id="phone" type="tel" inputmode="numeric"
+          placeholder="08012345678" pattern="[0-9]{11}" required>
+
+        <label for="amount">Amount (₦)</label>
+        <input id="amount" type="number" min="50" max="50000"
+          step="1" placeholder="Enter amount" required>
+
+        <button type="submit">Continue</button>
+        <p class="note">
+          Demo form only. No airtime will be purchased or payment taken yet.
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById("airtimeForm").addEventListener("submit", function(event) {
+      event.preventDefault();
+
+      const network = document.getElementById("network").value;
+      const phone = document.getElementById("phone").value;
+      const amount = Number(document.getElementById("amount").value);
+
+      if (!network || !/^[0-9]{11}$/.test(phone) || amount < 50 || amount > 50000) {
+        alert("Please check your details and try again.");
+        return;
+      }
+
+      alert("Your details are valid. Real airtime purchases will be enabled after provider and payment integration.");
+    });
+  </script>
+</body>
+</html>
