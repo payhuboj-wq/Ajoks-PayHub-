@@ -1,0 +1,462 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Dashboard | Ajoks PayHub</title>
+  <meta name="theme-color" content="#0b0b10">
+  <meta name="description" content="Ajoks PayHub - Data, airtime, bills and subscriptions.">
+
+  <style>
+    :root {
+      --bg: #0b0b10;
+      --panel: #17151e;
+      --panel-light: #211b2c;
+      --purple: #a77bfa;
+      --purple-light: #d4c0ff;
+      --silver: #c5c5d0;
+      --text: #ffffff;
+      --muted: #aaa5b5;
+      --border: #342b42;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+      min-height: 100vh;
+      padding-bottom: 100px;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 16px;
+      background: #111016;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand {
+      font-size: 21px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .brand span {
+      color: var(--purple);
+    }
+
+    .profile-link {
+      display: grid;
+      place-items: center;
+      width: 43px;
+      height: 43px;
+      border-radius: 50%;
+      background: var(--panel-light);
+      border: 1px solid #7755a7;
+      text-decoration: none;
+      font-size: 21px;
+    }
+
+    main {
+      width: 100%;
+      max-width: 680px;
+      margin: auto;
+      padding: 22px 16px;
+    }
+
+    .welcome {
+      margin-bottom: 22px;
+    }
+
+    .welcome h1 {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    .welcome p {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .wallet {
+      padding: 22px;
+      border: 1px solid #7551a6;
+      border-radius: 19px;
+      background: linear-gradient(135deg, #55358b, #241731 78%);
+      margin-bottom: 28px;
+    }
+
+    .wallet-label {
+      color: #e1d5f6;
+      font-size: 14px;
+    }
+
+    .balance {
+      font-size: 32px;
+      font-weight: 800;
+      margin: 12px 0 22px;
+      overflow-wrap: anywhere;
+    }
+
+    .wallet-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .wallet-actions a {
+      flex: 1;
+      min-width: 110px;
+      padding: 12px 10px;
+      border-radius: 9px;
+      text-align: center;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .fund-button {
+      background: #ffffff;
+      color: #301b48;
+    }
+
+    .history-button {
+      color: #ffffff;
+      border: 1px solid #c9b1ed;
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .section-heading h2 {
+      font-size: 19px;
+    }
+
+    .section-heading p {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .services {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 13px;
+    }
+
+    .service {
+      min-width: 0;
+      min-height: 145px;
+      padding: 17px 14px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .service:hover,
+    .service:focus-visible {
+      border-color: var(--purple);
+      background: var(--panel-light);
+      outline: none;
+    }
+
+    .service-icon {
+      width: 45px;
+      height: 45px;
+      display: grid;
+      place-items: center;
+      background: #2a2038;
+      border: 1px solid #40304f;
+      border-radius: 12px;
+      font-size: 24px;
+      margin-bottom: 13px;
+    }
+
+    .service h3 {
+      font-size: 15px;
+      line-height: 1.4;
+      margin-bottom: 6px;
+    }
+
+    .service p {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .service-arrow {
+      color: var(--purple-light);
+      font-size: 17px;
+      margin-top: auto;
+      padding-top: 10px;
+      align-self: flex-end;
+    }
+
+    .transactions {
+      margin-top: 29px;
+    }
+
+    .view-all {
+      color: var(--purple-light);
+      text-decoration: none;
+      font-size: 12px;
+    }
+
+    .empty-transactions {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px 16px;
+      text-align: center;
+    }
+
+    .empty-icon {
+      font-size: 29px;
+      margin-bottom: 12px;
+    }
+
+    .empty-transactions h3 {
+      font-size: 15px;
+      margin-bottom: 8px;
+    }
+
+    .empty-transactions p {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    footer {
+      padding: 25px 10px;
+      text-align: center;
+      color: #777180;
+      font-size: 12px;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      z-index: 20;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      background: #111016;
+      border-top: 1px solid var(--border);
+      padding: 11px 5px;
+      padding-bottom: max(11px, env(safe-area-inset-bottom));
+    }
+
+    .bottom-nav a {
+      flex: 1;
+      min-width: 0;
+      text-align: center;
+      text-decoration: none;
+      color: var(--silver);
+      font-size: 11px;
+      padding: 4px 2px;
+    }
+
+    .bottom-nav a span {
+      display: block;
+      font-size: 20px;
+      margin-bottom: 5px;
+    }
+
+    .bottom-nav a.active {
+      color: var(--purple-light);
+    }
+
+    @media (max-width: 360px) {
+      main {
+        padding: 18px 12px;
+      }
+
+      .services {
+        gap: 9px;
+      }
+
+      .service {
+        padding: 14px 11px;
+      }
+
+      .service h3 {
+        font-size: 14px;
+      }
+
+      .welcome h1 {
+        font-size: 22px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <a href="dashboard.html"
+       class="brand"
+       style="text-decoration:none">
+      Ajoks <span>PayHub</span>
+    </a>
+
+    <a href="profile.html"
+       class="profile-link"
+       aria-label="Open profile">
+      👤
+    </a>
+  </header>
+
+  <main>
+
+    <section class="welcome">
+      <h1>Welcome to Ajoks PayHub 👋</h1>
+      <p>One place for your data, bills and digital subscriptions.</p>
+    </section>
+
+    <section class="wallet" aria-label="Wallet summary">
+      <p class="wallet-label">Wallet Balance</p>
+
+      <div class="balance">₦0.00</div>
+
+      <div class="wallet-actions">
+        <a href="fund-wallet.html" class="fund-button">
+          + Fund Wallet
+        </a>
+
+        <a href="transactions.html" class="history-button">
+          Transaction History
+        </a>
+      </div>
+    </section>
+
+    <section aria-labelledby="services-heading">
+      <div class="section-heading">
+        <h2 id="services-heading">Our Services</h2>
+        <p>Choose a service</p>
+      </div>
+
+      <div class="services">
+
+        <a href="buy-data.html" class="service">
+          <div class="service-icon">📶</div>
+          <h3>Data</h3>
+          <p>Buy mobile data bundles at affordable prices.</p>
+          <span class="service-arrow">↗</span>
+        </a>
+
+        <a href="buy-airtime.html" class="service">
+          <div class="service-icon">📱</div>
+          <h3>Airtime</h3>
+          <p>Recharge your mobile phone quickly.</p>
+          <span class="service-arrow">↗</span>
+        </a>
+
+        <a href="cable-tv.html" class="service">
+          <div class="service-icon">📺</div>
+          <h3>Cable</h3>
+          <p>Renew your cable television subscription.</p>
+          <span class="service-arrow">↗</span>
+        </a>
+
+        <a href="electricity.html" class="service">
+          <div class="service-icon">⚡</div>
+          <h3>Electricity</h3>
+          <p>Pay your electricity bills conveniently.</p>
+          <span class="service-arrow">↗</span>
+        </a>
+
+        <a href="router-subscription.html" class="service">
+          <div class="service-icon">📡</div>
+          <h3>Router Subscription</h3>
+          <p>Renew eligible router and MiFi data plans.</p>
+          <span class="service-arrow">↗</span>
+        </a>
+
+        <a href="subscriptions.html" class="service">
+          <div class="service-icon">🎬</div>
+          <h3>Subscriptions</h3>
+          <p>Netflix, Prime Video, YouTube, MovieBox and more.</p>
+          <span class="service-arrow">↗</span>
+        </a>
+
+      </div>
+    </section>
+
+    <section class="transactions" aria-labelledby="transactions-heading">
+      <div class="section-heading">
+        <h2 id="transactions-heading">Transaction History</h2>
+        <a href="transactions.html" class="view-all">View all →</a>
+      </div>
+
+      <div class="empty-transactions">
+        <div class="empty-icon">🧾</div>
+        <h3>Your transactions will appear here</h3>
+        <p>
+          Once your payment and transaction system is connected,
+          you can view your recent purchases here.
+        </p>
+      </div>
+    </section>
+
+    <footer>
+      © 2026 Ajoks PayHub. All rights reserved.
+    </footer>
+
+  </main>
+
+  <nav class="bottom-nav" aria-label="Main navigation">
+    <a href="dashboard.html" class="active" aria-current="page">
+      <span>⌂</span>
+      Home
+    </a>
+
+    <a href="fund-wallet.html">
+      <span>＋</span>
+      Fund
+    </a>
+
+    <a href="orders.html">
+      <span>▣</span>
+      Orders
+    </a>
+
+    <a href="profile.html">
+      <span>👤</span>
+      Profile
+    </a>
+  </nav>
+
+</body>
+</html>
