@@ -1,0 +1,385 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Create Account | Ajoks PayHub</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: #09070f;
+      color: #f5f3fa;
+      font-family: Arial, sans-serif;
+    }
+
+    .signup-container {
+      width: 100%;
+      max-width: 430px;
+      padding: 30px 24px;
+      background: #15121f;
+      border: 1px solid #393044;
+      border-radius: 18px;
+      box-shadow: 0 0 30px rgba(139, 92, 246, 0.12);
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    .logo h1 {
+      color: #b99aff;
+      font-size: 29px;
+      margin-bottom: 8px;
+    }
+
+    .logo p {
+      color: #b8b3c5;
+      font-size: 14px;
+    }
+
+    h2 {
+      font-size: 23px;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: #aaa4b8;
+      font-size: 14px;
+      line-height: 1.5;
+      margin-bottom: 23px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    input {
+      display: block;
+      width: 100%;
+      padding: 13px;
+      margin-bottom: 17px;
+      background: #0d0b14;
+      color: #fff;
+      border: 1px solid #494052;
+      border-radius: 9px;
+      outline: none;
+      font-size: 15px;
+    }
+
+    input:focus {
+      border-color: #a78bfa;
+      box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.12);
+    }
+
+    .hint {
+      color: #aaa4b8;
+      font-size: 12px;
+      margin-top: -10px;
+      margin-bottom: 17px;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 9px;
+      background: #8b5cf6;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+
+    #message {
+      display: none;
+      margin-top: 18px;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+    }
+
+    #message.success {
+      display: block;
+      background: #142b20;
+      border: 1px solid #28764a;
+      color: #a7f3c1;
+    }
+
+    #message.error {
+      display: block;
+      background: #321719;
+      border: 1px solid #8f343b;
+      color: #ffb4b4;
+    }
+
+    .login-link {
+      margin-top: 22px;
+      text-align: center;
+      color: #b8b3c5;
+      font-size: 14px;
+    }
+
+    a {
+      color: #c4a7ff;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .back-link {
+      display: block;
+      margin-top: 18px;
+      text-align: center;
+      font-size: 13px;
+      color: #aaa4b8;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="signup-container">
+    <div class="logo">
+      <h1>Ajoks PayHub</h1>
+      <p>Your payments, made simple.</p>
+    </div>
+
+    <h2>Create your account</h2>
+    <p class="subtitle">
+      Sign up to access your wallet and PayHub services.
+    </p>
+
+    <form id="signupForm">
+      <label for="username">Username</label>
+      <input
+        id="username"
+        name="username"
+        type="text"
+        autocomplete="username"
+        minlength="3"
+        maxlength="20"
+        pattern="[A-Za-z0-9_]+"
+        title="Use 3–20 letters, numbers, or underscores."
+        placeholder="Choose a username"
+        required
+      >
+      <p class="hint">Use 3–20 letters, numbers, or underscores.</p>
+
+      <label for="email">Email address</label>
+      <input
+        id="email"
+        name="email"
+        type="email"
+        autocomplete="email"
+        placeholder="you@example.com"
+        required
+      >
+
+      <label for="password">Password</label>
+      <input
+        id="password"
+        name="password"
+        type="password"
+        autocomplete="new-password"
+        minlength="8"
+        placeholder="At least 8 characters"
+        required
+      >
+
+      <label for="confirmPassword">Confirm password</label>
+      <input
+        id="confirmPassword"
+        name="confirmPassword"
+        type="password"
+        autocomplete="new-password"
+        minlength="8"
+        placeholder="Enter your password again"
+        required
+      >
+
+      <button id="signupButton" type="submit">
+        Create Account
+      </button>
+
+      <div id="message" role="status" aria-live="polite"></div>
+    </form>
+
+    <p class="login-link">
+      Already have an account?
+      <a href="login.html">Log in</a>
+    </p>
+
+    <a class="back-link" href="index.html">
+      ← Back to Home
+    </a>
+  </main>
+
+  <script type="module">
+    import { createClient } from
+      "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+    // Replace both values with your own Supabase project details.
+    const SUPABASE_URL = "https://rsrpxgmpcypyybzdidbj.supabase.co/rest/v1/";
+    const SUPABASE_PUBLISHABLE_KEY =
+      "sb_publishable_5RNJKNpdSEVibrtyrTwK0A_k3Zfid3O";
+
+    const form = document.getElementById("signupForm");
+    const button = document.getElementById("signupButton");
+    const message = document.getElementById("message");
+
+    let supabase;
+
+    function showMessage(text, type) {
+      message.textContent = text;
+      message.className = type;
+    }
+
+    try {
+      if (
+        SUPABASE_URL.includes("YOUR_SUPABASE") ||
+        SUPABASE_PUBLISHABLE_KEY.includes("YOUR_SUPABASE")
+      ) {
+        throw new Error(
+          "Add your Supabase project URL and publishable key in the code first."
+        );
+      }
+
+      supabase = createClient(
+        SUPABASE_URL,
+        SUPABASE_PUBLISHABLE_KEY
+      );
+    } catch (error) {
+      showMessage(error.message, "error");
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      if (!supabase) {
+        showMessage(
+          "Supabase is not configured yet. Add your project URL and publishable key.",
+          "error"
+        );
+        return;
+      }
+
+      const username = document
+        .getElementById("username")
+        .value.trim();
+
+      const email = document
+        .getElementById("email")
+        .value.trim();
+
+      const password = document
+        .getElementById("password")
+        .value;
+
+      const confirmPassword = document
+        .getElementById("confirmPassword")
+        .value;
+
+      if (!/^[A-Za-z0-9_]{3,20}$/.test(username)) {
+        showMessage(
+          "Username must contain 3–20 letters, numbers, or underscores.",
+          "error"
+        );
+        return;
+      }
+
+      if (password.length < 8) {
+        showMessage(
+          "Your password must be at least 8 characters long.",
+          "error"
+        );
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        showMessage(
+          "Your passwords do not match. Please try again.",
+          "error"
+        );
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = "Creating account...";
+
+      try {
+        const redirectUrl = new URL(
+          "login.html",
+          window.location.href
+        );
+        redirectUrl.searchParams.set("confirmed", "1");
+
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              username: username
+            },
+            emailRedirectTo: redirectUrl.href
+          }
+        });
+
+        if (error) {
+          throw error;
+        }
+
+        if (data.session) {
+          showMessage(
+            "Account created successfully! Opening your dashboard...",
+            "success"
+          );
+
+          window.location.href = "dashboard.html";
+          return;
+        }
+
+        showMessage(
+          "Your sign-up request was submitted. Check your email for a confirmation link before logging in. If you do not receive it, check your spam folder and your Supabase email settings.",
+          "success"
+        );
+
+        form.reset();
+
+      } catch (error) {
+        showMessage(
+          error.message || "Unable to create your account. Please try again.",
+          "error"
+        );
+      } finally {
+        button.disabled = false;
+        button.textContent = "Create Account";
+      }
+    });
+  </script>
+</body>
+</html>
