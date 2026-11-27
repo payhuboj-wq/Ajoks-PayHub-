@@ -3,212 +3,173 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Sign Up | Ajoks PayHub</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Account | Ajoks PayHub</title>
   <style>
     * { box-sizing: border-box; }
     body {
       margin: 0;
       min-height: 100vh;
-      padding: 24px 16px;
       display: flex;
-      align-items: center;
       justify-content: center;
-      background: #09090f;
+      align-items: center;
+      padding: 20px;
+      background: #080810;
       color: #fff;
       font-family: Arial, sans-serif;
     }
     .card {
       width: 100%;
       max-width: 420px;
-      padding: 28px 22px;
-      border: 1px solid #393047;
+      padding: 28px;
+      background: #151521;
+      border: 1px solid #38304e;
       border-radius: 18px;
-      background: #15121e;
     }
-    .brand {
-      color: #c4b5fd;
-      font-size: 22px;
-      font-weight: bold;
-      text-align: center;
-    }
-    h1 { text-align: center; margin-bottom: 8px; }
-    .subtitle {
-      text-align: center;
-      color: #aaa3b8;
-      font-size: 14px;
-      margin-bottom: 24px;
-    }
-    label {
-      display: block;
-      margin: 16px 0 7px;
-      font-size: 14px;
-      color: #ddd6e8;
-    }
+    h1 { color: #b99aff; margin-bottom: 8px; }
+    .sub { color: #aaa7b8; margin-bottom: 24px; }
+    label { display: block; margin: 15px 0 7px; }
     input {
-      display: block;
       width: 100%;
       padding: 13px;
-      border: 1px solid #484054;
       border-radius: 9px;
-      background: #0c0a12;
+      border: 1px solid #494458;
+      background: #0c0c15;
       color: white;
       font-size: 16px;
     }
-    input:focus { outline: 1px solid #a78bfa; }
     button {
       width: 100%;
-      margin-top: 23px;
       padding: 14px;
+      margin-top: 22px;
       border: 0;
       border-radius: 9px;
-      background: #8b5cf6;
+      background: #9865ff;
       color: white;
       font-size: 16px;
       font-weight: bold;
     }
     button:disabled { opacity: .6; }
-    #message {
-      display: none;
-      margin-top: 16px;
-      padding: 12px;
-      border-radius: 8px;
-      overflow-wrap: anywhere;
-      font-size: 14px;
-      line-height: 1.5;
-    }
-    .bottom {
-      text-align: center;
-      margin-top: 22px;
-      font-size: 14px;
-      color: #aaa3b8;
-    }
-    a { color: #c4b5fd; }
+    #message { margin-top: 16px; line-height: 1.5; overflow-wrap: anywhere; }
+    a { color: #c5a8ff; }
+    .foot { text-align: center; margin-top: 20px; color: #aaa7b8; }
   </style>
 </head>
 <body>
   <main class="card">
-    <div class="brand">AJOKS PAYHUB</div>
-    <h1>Create Account</h1>
-    <p class="subtitle">Register to get started.</p>
+    <h1>Ajoks PayHub</h1>
+    <p class="sub">Create your account to get started.</p>
 
     <form id="signupForm">
       <label for="username">Username</label>
-      <input id="username" name="username"
-        type="text" minlength="3" maxlength="20"
-        pattern="[A-Za-z0-9_]+"
-        placeholder="Choose a username"
-        autocomplete="username" required>
+      <input id="username" name="username" autocomplete="username"
+             required minlength="3" maxlength="30">
 
-      <label for="email">Email Address</label>
+      <label for="email">Email address</label>
       <input id="email" name="email" type="email"
-        placeholder="Enter your email"
-        autocomplete="email" required>
+             autocomplete="email" required>
 
       <label for="password">Password</label>
-      <input id="password" name="password"
-        type="password" minlength="8"
-        placeholder="Create a password"
-        autocomplete="new-password" required>
+      <input id="password" name="password" type="password"
+             autocomplete="new-password" minlength="8" required>
 
-      <label for="confirmPassword">Confirm Password</label>
+      <label for="confirmPassword">Confirm password</label>
       <input id="confirmPassword" name="confirmPassword"
-        type="password" minlength="8"
-        placeholder="Enter password again"
-        autocomplete="new-password" required>
+             type="password" autocomplete="new-password" required>
 
-      <button id="signupButton" type="submit">
-        Create Account
-      </button>
-      <div id="message" role="status" aria-live="polite"></div>
+      <button id="signupButton" type="submit">Create Account</button>
+      <p id="message" role="status" aria-live="polite"></p>
     </form>
 
-    <p class="bottom">
-      Already have an account? <a href="login.html">Log in</a>
+    <p class="foot">
+      Already registered? <a href="login.html">Log in</a>
     </p>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    // Put your values in the TWO lines below only.
-    const SUPABASE_URL = "https://rsrpxgmpcypyybzdidbj.supabase.co/rest/v1/";
-    const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_5RNJKNpdSEVibrtyrTwK0A_k3Zfid3O";
+    // Supabase frontend configuration
+    const SUPABASE_URL =
+      "https://rsrpxgmpcypyybzdidbj.supabase.co";
+
+    const SUPABASE_PUBLISHABLE_KEY =
+      "sb_publishable_5RNJKNpdSEVibrtyrTwK0A_k3Zfid3O";
 
     const form = document.getElementById("signupForm");
     const button = document.getElementById("signupButton");
     const message = document.getElementById("message");
 
-    function showMessage(text, success = false) {
-      message.style.display = "block";
-      message.textContent = text;
-      message.style.color = success ? "#86efac" : "#fca5a5";
-      message.style.background = success ? "#12301f" : "#35151c";
-    }
-
-    form.addEventListener("submit", async (event) => {
+    form.addEventListener("submit", async function (event) {
       event.preventDefault();
 
-      const username = document.getElementById("username").value.trim();
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value;
-      const confirmPassword = document.getElementById("confirmPassword").value;
-
-      if (!/^[A-Za-z0-9_]{3,20}$/.test(username)) {
-        showMessage("Use 3–20 letters, numbers, or underscores for your username.");
-        return;
-      }
-
-      if (password !== confirmPassword) {
-        showMessage("The passwords do not match.");
-        return;
-      }
-
-      if (
-        !/^https:\/\/[a-zA-Z0-9-]+\.supabase\.co\/?$/.test(SUPABASE_URL) ||
-        SUPABASE_PUBLISHABLE_KEY === "PASTE_YOUR_PUBLISHABLE_KEY_HERE" ||
-        !SUPABASE_PUBLISHABLE_KEY.trim()
-      ) {
-        showMessage("Please enter your correct Supabase Project URL and publishable key in the code.");
-        return;
-      }
-
-      if (!window.supabase) {
-        showMessage("Supabase could not load. Check your internet connection and try again.");
-        return;
-      }
-
+      message.textContent = "";
       button.disabled = true;
       button.textContent = "Creating account...";
 
       try {
+        if (!window.supabase) {
+          throw new Error("The signup library could not load. Check your internet connection and try again.");
+        }
+
         const client = window.supabase.createClient(
-          SUPABASE_URL.replace(/\/$/, ""),
-          SUPABASE_PUBLISHABLE_KEY.trim()
+          SUPABASE_URL,
+          SUPABASE_PUBLISHABLE_KEY
         );
 
+        const username =
+          document.getElementById("username").value.trim();
+        const email =
+          document.getElementById("email").value.trim();
+        const password =
+          document.getElementById("password").value;
+        const confirmPassword =
+          document.getElementById("confirmPassword").value;
+
+        if (username.length < 3) {
+          throw new Error("Username must be at least 3 characters.");
+        }
+
+        if (password.length < 8) {
+          throw new Error("Password must be at least 8 characters.");
+        }
+
+        if (password !== confirmPassword) {
+          throw new Error("Your passwords do not match.");
+        }
+
         const { data, error } = await client.auth.signUp({
-          email,
-          password,
+          email: email,
+          password: password,
           options: {
-            data: { username },
-            emailRedirectTo: "https://ajoks-payhub.pages.dev/login.html"
+            data: { username: username },
+            emailRedirectTo:
+              "https://ajoks-payhub.pages.dev/login.html"
           }
         });
 
         if (error) throw error;
 
-        if (data.session) {
-          showMessage("Account created! Opening dashboard...", true);
-          window.location.href = "dashboard.html";
-        } else {
-          showMessage(
-            "Registration submitted. Check your email for a confirmation link before logging in.",
-            true
-          );
+        if (data.user && data.user.identities &&
+            data.user.identities.length === 0) {
+          message.textContent =
+            "An account may already exist with this email. Try logging in or resetting your password.";
+          return;
         }
+
+        if (data.session) {
+          message.textContent =
+            "Account created successfully! You can now log in.";
+        } else {
+          message.textContent =
+            "Signup received! Check your email for the confirmation link before logging in.";
+        }
+
+        form.reset();
+
       } catch (error) {
         console.error("Signup error:", error);
-        showMessage("Signup failed: " + (error.message || "Please try again."));
+        message.textContent =
+          "Signup failed: " + (error.message || "Please try again.");
       } finally {
         button.disabled = false;
         button.textContent = "Create Account";
