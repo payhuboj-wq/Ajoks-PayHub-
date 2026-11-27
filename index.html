@@ -1,0 +1,995 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#050a2a">
+<meta name="description" content="Ajoks PayHub — data, airtime, electricity, cable TV and subscriptions.">
+<title>Ajoks PayHub | Pay Smart. Live Better.</title>
+
+<style>
+:root {
+  --bg: #050821;
+  --panel: #0b1440;
+  --blue: #08c9ff;
+  --purple: #861cff;
+  --silver: #eef3ff;
+  --muted: #b9c6e7;
+  --line: rgba(51,173,255,.42);
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  color: var(--silver);
+  font-family: Inter, system-ui, sans-serif;
+  background:
+    radial-gradient(ellipse at 75% 12%, #112c8a 0, transparent 34%),
+    radial-gradient(ellipse at 5% 38%, #19085a 0, transparent 30%),
+    var(--bg);
+}
+
+a { color: inherit; text-decoration: none; }
+button, input { font: inherit; }
+button { cursor: pointer; }
+
+.wrap {
+  width: min(1180px, 92%);
+  margin: auto;
+}
+
+.topline {
+  border-bottom: 1px solid #174a94;
+  background: #03071d;
+  color: #d9eaff;
+  font-size: .78rem;
+}
+
+.topline .wrap {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 9px 0;
+}
+
+.navshell {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #050821ed;
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--line);
+}
+
+.nav {
+  min-height: 78px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.3rem;
+  font-weight: 850;
+}
+
+.logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #03d8ff, #5140ff 55%, #a21bff);
+  font-size: 1.6rem;
+  box-shadow: 0 0 25px #197dff66;
+}
+
+.accent {
+  background: linear-gradient(90deg, var(--blue), #bc6cff);
+  background-clip: text;
+  color: transparent;
+}
+
+.tagline {
+  display: block;
+  font-size: .68rem;
+  color: #c4d0ed;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.navlinks {
+  display: flex;
+  gap: 25px;
+  font-size: .9rem;
+}
+
+.navlinks a:hover,
+.footlinks a:hover {
+  color: var(--blue);
+}
+
+.navactions {
+  display: flex;
+  gap: 9px;
+}
+
+.btn {
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 12px 19px;
+  font-weight: 750;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: .2s;
+}
+
+.primary {
+  background: linear-gradient(100deg, #711cff, #ba23ff 58%, #008dff);
+  color: white;
+  box-shadow: 0 8px 25px #7b21ff4c;
+}
+
+.primary:hover {
+  filter: brightness(1.12);
+  transform: translateY(-2px);
+}
+
+.outline {
+  background: #ffffff06;
+  border-color: #8b8cff;
+  color: white;
+}
+
+.menubtn {
+  display: none;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 9px 12px;
+  color: white;
+  background: #0c1233;
+}
+
+/* HERO */
+
+.hero {
+  padding: 64px 0 44px;
+  position: relative;
+  overflow: hidden;
+}
+
+.heroGrid {
+  display: grid;
+  grid-template-columns: 1.08fr .92fr;
+  align-items: center;
+  gap: 30px;
+  position: relative;
+}
+
+.eyebrow {
+  display: inline-flex;
+  gap: 9px;
+  align-items: center;
+  border: 1px solid #4856ff88;
+  background: #27116a99;
+  border-radius: 999px;
+  padding: 9px 14px;
+  font-size: .82rem;
+  font-weight: 750;
+}
+
+.hero h1 {
+  font-size: clamp(2.8rem, 5.4vw, 4.7rem);
+  line-height: 1.02;
+  letter-spacing: -2.7px;
+  margin: 21px 0 17px;
+}
+
+.gradient {
+  background: linear-gradient(90deg, #15d7ff, #8e52ff 60%, #e252ff);
+  background-clip: text;
+  color: transparent;
+}
+
+.hero p {
+  color: #d0dcf7;
+  line-height: 1.7;
+  font-size: 1.07rem;
+  max-width: 590px;
+}
+
+.checks {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin: 20px 0;
+  font-size: .84rem;
+}
+
+.checks span:before {
+  content: "✓";
+  display: inline-grid;
+  place-items: center;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  background: #04bff4;
+  color: #00142c;
+  font-weight: 900;
+  margin-right: 7px;
+}
+
+.heroBtns {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 25px;
+}
+
+.art {
+  min-height: 345px;
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.globe {
+  width: min(330px, 74vw);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(
+    circle at 30% 24%,
+    #41eaff,
+    #2058ff 27%,
+    #6418d9 48%,
+    #07102d 72%
+  );
+  border: 1px solid #69dfff;
+  box-shadow: 0 0 65px #145bff88;
+}
+
+.globeInner {
+  width: 70%;
+  height: 70%;
+  border: 1px solid #a5f0ff9c;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+}
+
+.monogram {
+  font-size: 6rem;
+  font-weight: 950;
+  text-shadow: 0 0 28px #d7fbff;
+}
+
+.float {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: #08143def;
+  border: 1px solid #35c7ff99;
+  border-radius: 15px;
+  box-shadow: 0 12px 35px #0007;
+  font-weight: 800;
+}
+
+.float b {
+  font-size: 1.4rem;
+  color: #52dfff;
+}
+
+.float small {
+  display: block;
+  color: #bac9ed;
+  font-weight: 500;
+  font-size: .72rem;
+  margin-top: 3px;
+}
+
+.f1 { top: 7%; left: 0; }
+.f2 { top: 22%; right: -1%; }
+.f3 { bottom: 8%; left: 3%; }
+.f4 { bottom: 6%; right: 0; }
+
+/* SERVICES */
+
+.section {
+  padding: 35px 0 48px;
+}
+
+.heading {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.heading h2 {
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  margin: 0 0 8px;
+}
+
+.heading p {
+  color: var(--muted);
+  margin: 0;
+}
+
+.services {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+}
+
+.service {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 120px;
+  padding: 19px;
+  background: linear-gradient(135deg, #101b4b, #0a0c2a 80%);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  transition: .2s;
+}
+
+.service:hover {
+  transform: translateY(-4px);
+  border-color: #35d8ff;
+  box-shadow: 0 14px 35px #075fff24;
+}
+
+.serviceIcon {
+  width: 52px;
+  height: 52px;
+  flex: 0 0 52px;
+  display: grid;
+  place-items: center;
+  border-radius: 15px;
+  background: linear-gradient(145deg, #078cff, #7425ff);
+  font-size: 1.5rem;
+}
+
+.service h3 {
+  font-size: 1rem;
+  margin: 0 0 5px;
+}
+
+.service p {
+  font-size: .82rem;
+  color: #bdc9e7;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.arrow {
+  margin-left: auto;
+  color: #b3caff;
+  font-size: 1.35rem;
+}
+
+/* BENEFITS */
+
+.features {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin: 15px 0 45px;
+  padding: 22px;
+  background: linear-gradient(110deg, #0b143c, #090b24);
+  border: 1px solid var(--line);
+  border-radius: 19px;
+}
+
+.feature {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 7px;
+}
+
+.featureIcon {
+  font-size: 1.7rem;
+  color: #3fd9ff;
+}
+
+.feature strong {
+  display: block;
+  font-size: .91rem;
+}
+
+.feature small {
+  display: block;
+  color: var(--muted);
+  line-height: 1.45;
+  margin-top: 4px;
+}
+
+.cta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  padding: 27px 29px;
+  border: 1px solid #8c64ff;
+  border-radius: 20px;
+  background: linear-gradient(100deg, #241078, #101d57 55%, #320b71);
+  margin-bottom: 50px;
+}
+
+.cta h2 {
+  margin: 0 0 7px;
+  font-size: 1.45rem;
+}
+
+.cta p {
+  margin: 0;
+  color: #d1dcf8;
+}
+
+/* FOOTER */
+
+.footer {
+  border-top: 1px solid var(--line);
+  padding: 25px 0 32px;
+  color: var(--muted);
+}
+
+.footerrow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.footlinks {
+  display: flex;
+  gap: 17px;
+  flex-wrap: wrap;
+  font-size: .86rem;
+}
+
+.copyright { font-size: .8rem; }
+
+/* SIGNUP AND LOGIN PREVIEW */
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: #000b;
+  z-index: 30;
+  display: none;
+  place-items: center;
+  padding: 18px;
+}
+
+.backdrop.show { display: grid; }
+
+.modal {
+  width: min(440px, 100%);
+  padding: 25px;
+  background: #0b1030;
+  border: 1px solid #4a8cff;
+  border-radius: 21px;
+  box-shadow: 0 25px 90px #000b;
+}
+
+.modalhead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal h2 { margin: 0; }
+
+.close {
+  background: none;
+  border: 0;
+  color: white;
+  font-size: 1.6rem;
+}
+
+.field {
+  display: grid;
+  gap: 7px;
+  margin: 15px 0;
+}
+
+.field label {
+  font-size: .86rem;
+  color: #d7e2ff;
+}
+
+.field input {
+  width: 100%;
+  padding: 13px;
+  background: #050821;
+  border: 1px solid #3b4d88;
+  border-radius: 10px;
+  color: white;
+  outline: none;
+}
+
+.field input:focus { border-color: #26cfff; }
+
+.modal .btn {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.notice {
+  font-size: .82rem;
+  line-height: 1.5;
+  color: #c5d3f2;
+  background: #111a42;
+  padding: 12px;
+  border-radius: 10px;
+}
+
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translate(-50%, 150%);
+  background: #101a43;
+  border: 1px solid #3abfff;
+  color: white;
+  padding: 13px 18px;
+  border-radius: 12px;
+  z-index: 50;
+  transition: .25s;
+  max-width: 90%;
+  text-align: center;
+}
+
+.toast.show { transform: translate(-50%, 0); }
+
+/* MOBILE */
+
+@media (max-width: 900px) {
+  .navlinks {
+    display: none;
+    position: absolute;
+    top: 78px;
+    left: 0;
+    right: 0;
+    padding: 20px 4%;
+    background: #050821;
+    flex-direction: column;
+    gap: 18px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .navlinks.open { display: flex; }
+  .menubtn { display: block; }
+  .heroGrid { grid-template-columns: 1fr; }
+
+  .art {
+    min-height: 300px;
+    max-width: 600px;
+    width: 100%;
+    margin: auto;
+  }
+
+  .services { grid-template-columns: repeat(2, 1fr); }
+  .features { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 560px) {
+  .topline .wrap { font-size: .7rem; }
+  .brand { font-size: 1.06rem; }
+  .logo { width: 38px; height: 38px; }
+  .tagline { font-size: .61rem; }
+  .nav { min-height: 70px; }
+
+  .navlinks { top: 70px; }
+  .navactions .outline { display: none; }
+  .navactions .btn { padding: 10px 13px; font-size: .82rem; }
+
+  .hero { padding-top: 42px; }
+  .hero h1 { letter-spacing: -1.7px; }
+  .hero p { font-size: .98rem; }
+
+  .art { min-height: 270px; }
+  .globe { width: 225px; }
+  .monogram { font-size: 4rem; }
+
+  .float {
+    font-size: .77rem;
+    padding: 9px 10px;
+    gap: 7px;
+  }
+
+  .float b { font-size: 1.2rem; }
+  .f1 { left: -1%; top: 4%; }
+  .f2 { right: -1%; top: 20%; }
+  .f3 { left: 0; bottom: 4%; }
+  .f4 { right: 0; bottom: 3%; }
+
+  .services { grid-template-columns: 1fr; }
+  .service { min-height: 103px; }
+  .features { grid-template-columns: 1fr; padding: 16px; }
+
+  .cta {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 22px;
+  }
+
+  .footerrow {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="topline">
+  <div class="wrap">
+    <span>◆ Secure • Fast • Reliable</span>
+    <span>Support • Contact Us</span>
+  </div>
+</div>
+
+<header class="navshell">
+  <div class="wrap nav">
+    <a class="brand" href="#home">
+      <span class="logo">A</span>
+      <span>
+        Ajoks <span class="accent">PayHub</span>
+        <small class="tagline">Your Everyday Digital Payment Partner</small>
+      </span>
+    </a>
+
+    <nav class="navlinks" id="navlinks">
+      <a href="#home">Home</a>
+      <a href="#services">Services</a>
+      <a href="#why">Why Ajoks</a>
+      <a href="#contact">Contact</a>
+    </nav>
+
+    <div class="navactions">
+      <button class="btn outline" data-modal="login">Log In</button>
+      <button class="btn primary" data-modal="signup">Sign Up</button>
+      <button class="menubtn" id="menubtn" aria-label="Open menu">☰</button>
+    </div>
+  </div>
+</header>
+
+<main>
+<section class="hero" id="home">
+  <div class="wrap heroGrid">
+    <div>
+      <span class="eyebrow">⚡ Fast • Secure • Convenient</span>
+
+      <h1>Pay Bills.<br>
+        <span class="gradient">Stay Connected.</span>
+      </h1>
+
+      <p>
+        Buy data, recharge airtime, pay electricity bills and manage
+        your favourite subscriptions in one convenient place with Ajoks PayHub.
+      </p>
+
+      <div class="checks">
+        <span>Easy transactions</span>
+        <span>Helpful support</span>
+        <span>Clear records</span>
+      </div>
+
+      <div class="heroBtns">
+        <a class="btn primary" href="#services">⚡ Explore Services →</a>
+        <button class="btn outline" data-modal="signup">Create an Account</button>
+      </div>
+    </div>
+
+    <div class="art">
+      <div class="globe">
+        <div class="globeInner">
+          <div class="monogram">A</div>
+        </div>
+      </div>
+
+      <div class="float f1">
+        <b>▥</b>
+        <span>Data<small>Internet bundles</small></span>
+      </div>
+
+      <div class="float f2">
+        <b>ϟ</b>
+        <span>Electricity<small>Bill payments</small></span>
+      </div>
+
+      <div class="float f3">
+        <b>▣</b>
+        <span>Airtime<small>Quick top-ups</small></span>
+      </div>
+
+      <div class="float f4">
+        <b>▶</b>
+        <span>Subscriptions<small>TV and more</small></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="services">
+  <div class="wrap">
+    <div class="heading">
+      <h2>Our <span class="gradient">Services</span></h2>
+      <p>Your digital needs, all in one place.</p>
+    </div>
+
+    <div class="services">
+      <a class="service" href="#account" data-service="Data">
+        <span class="serviceIcon">▥</span>
+        <span><h3>Buy Data</h3><p>Internet bundles for supported mobile networks.</p></span>
+        <span class="arrow">›</span>
+      </a>
+
+      <a class="service" href="#account" data-service="Airtime">
+        <span class="serviceIcon">▣</span>
+        <span><h3>Buy Airtime</h3><p>Top up your phone with ease.</p></span>
+        <span class="arrow">›</span>
+      </a>
+
+      <a class="service" href="#account" data-service="Electricity bills">
+        <span class="serviceIcon">ϟ</span>
+        <span><h3>Electricity Bills</h3><p>Pay supported electricity providers.</p></span>
+        <span class="arrow">›</span>
+      </a>
+
+      <a class="service" href="#account" data-service="Cable TV">
+        <span class="serviceIcon">▣</span>
+        <span><h3>Cable TV</h3><p>Renew supported TV packages and plans.</p></span>
+        <span class="arrow">›</span>
+      </a>
+
+      <a class="service" href="#account" data-service="Netflix and subscriptions">
+        <span class="serviceIcon">▶</span>
+        <span><h3>Netflix & More</h3><p>Explore eligible entertainment subscriptions.</p></span>
+        <span class="arrow">›</span>
+      </a>
+
+      <a class="service" href="#account" data-service="Router subscription">
+        <span class="serviceIcon">⌁</span>
+        <span><h3>Router Subscription</h3><p>Internet plans for supported routers and MiFi.</p></span>
+        <span class="arrow">›</span>
+      </a>
+
+      <a class="service" href="#account" data-service="Other subscriptions">
+        <span class="serviceIcon">✧</span>
+        <span><h3>More Subscriptions</h3><p>More useful digital services as we grow.</p></span>
+        <span class="arrow">›</span>
+      </a>
+
+      <a class="service" href="#account" data-service="Other services">
+        <span class="serviceIcon">＋</span>
+        <span><h3>More Services</h3><p>Additional bill and digital payment options.</p></span>
+        <span class="arrow">›</span>
+      </a>
+
+      <a class="service" href="#account" data-modal="signup">
+        <span class="serviceIcon">◎</span>
+        <span><h3>Your Account</h3><p>Prepare for your personal dashboard and records.</p></span>
+        <span class="arrow">›</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" id="why">
+  <div class="features">
+    <div class="feature">
+      <span class="featureIcon">♢</span>
+      <span><strong>Built with care</strong><small>Clear information at every step.</small></span>
+    </div>
+
+    <div class="feature">
+      <span class="featureIcon">⚡</span>
+      <span><strong>Convenient services</strong><small>Essential services in one place.</small></span>
+    </div>
+
+    <div class="feature">
+      <span class="featureIcon">▤</span>
+      <span><strong>Transaction history</strong><small>Dashboard feature to connect next.</small></span>
+    </div>
+
+    <div class="feature">
+      <span class="featureIcon">◎</span>
+      <span><strong>Customer support</strong><small>Add your official contact details.</small></span>
+    </div>
+  </div>
+
+  <div class="cta" id="account">
+    <div>
+      <h2>Ready to get started?</h2>
+      <p>Create an account and get ready for your Ajoks PayHub dashboard.</p>
+    </div>
+
+    <div>
+      <button class="btn primary" data-modal="signup">Create Account →</button>
+      <button class="btn outline" data-modal="login">Log In</button>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="footer" id="contact">
+  <div class="wrap footerrow">
+    <a class="brand" href="#home">
+      <span class="logo">A</span>
+      <span>
+        Ajoks <span class="accent">PayHub</span>
+        <small class="tagline">Pay Smart. Live Better.</small>
+      </span>
+    </a>
+
+    <nav class="footlinks">
+      <a href="#home">Home</a>
+      <a href="#services">Services</a>
+      <a href="#why">Why Ajoks</a>
+      <a href="mailto:hello@ajokspayhub.example">Contact</a>
+    </nav>
+
+    <div class="copyright">
+      © <span id="year"></span> Ajoks PayHub. All rights reserved.
+    </div>
+  </div>
+</footer>
+
+<div class="backdrop" id="backdrop" role="dialog" aria-modal="true"
+     aria-labelledby="modalTitle">
+  <div class="modal">
+    <div class="modalhead">
+      <h2 id="modalTitle">Create your account</h2>
+      <button class="close" id="closeModal" aria-label="Close">×</button>
+    </div>
+
+    <form id="accountForm">
+      <div class="field">
+        <label for="fullName">Full name</label>
+        <input id="fullName" name="fullName" autocomplete="name"
+               placeholder="Enter your full name" required>
+      </div>
+
+      <div class="field">
+        <label for="email">Email address</label>
+        <input id="email" name="email" type="email" autocomplete="email"
+               placeholder="you@example.com" required>
+      </div>
+
+      <div class="field passwordField">
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password"
+               autocomplete="new-password" minlength="8"
+               placeholder="At least 8 characters" required>
+      </div>
+
+      <p class="notice">
+        Preview only: this form does not create a real account or process
+        payments yet. Supabase authentication and a payment provider must
+        be connected before launch.
+      </p>
+
+      <button class="btn primary" type="submit" id="formSubmit">Continue</button>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const navlinks = document.getElementById('navlinks');
+const backdrop = document.getElementById('backdrop');
+const title = document.getElementById('modalTitle');
+const form = document.getElementById('accountForm');
+const passwordField = document.querySelector('.passwordField');
+const submit = document.getElementById('formSubmit');
+const toast = document.getElementById('toast');
+
+document.getElementById('year').textContent = new Date().getFullYear();
+
+document.getElementById('menubtn').addEventListener('click', () => {
+  navlinks.classList.toggle('open');
+});
+
+navlinks.querySelectorAll('a').forEach(link => {
+  link.addEventListener('click', () => navlinks.classList.remove('open'));
+});
+
+let toastTimer;
+
+function showToast(message) {
+  toast.textContent = message;
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+
+  toastTimer = setTimeout(() => {
+    toast.classList.remove('show');
+  }, 3600);
+}
+
+function openModal(mode) {
+  const signup = mode === 'signup';
+
+  title.textContent = signup ? 'Create your account' : 'Welcome back';
+
+  document.getElementById('password').autocomplete =
+    signup ? 'new-password' : 'current-password';
+
+  document.getElementById('fullName').parentElement.style.display =
+    signup ? 'grid' : 'none';
+
+  document.getElementById('password').minLength = signup ? 8 : 1;
+  submit.textContent = signup ? 'Continue' : 'Log In';
+
+  form.dataset.mode = mode;
+  backdrop.classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  backdrop.classList.remove('show');
+  document.body.style.overflow = '';
+  form.reset();
+}
+
+document.querySelectorAll('[data-modal]').forEach(element => {
+  element.addEventListener('click', event => {
+    event.preventDefault();
+    openModal(element.dataset.modal);
+  });
+});
+
+document.querySelectorAll('[data-service]').forEach(element => {
+  element.addEventListener('click', event => {
+    event.preventDefault();
+
+    showToast(
+      element.dataset.service +
+      ' will be available after provider integration and account setup.'
+    );
+
+    openModal('signup');
+  });
+});
+
+document.getElementById('closeModal').addEventListener('click', closeModal);
+
+backdrop.addEventListener('click', event => {
+  if (event.target === backdrop) closeModal();
+});
+
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape') closeModal();
+});
+
+form.addEventListener('submit', event => {
+  event.preventDefault();
+
+  showToast(
+    'Demo only: connect Supabase Auth to enable real customer accounts.'
+  );
+
+  closeModal();
+});
+</script>
+
+</body>
+</html>
