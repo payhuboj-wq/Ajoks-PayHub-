@@ -1,0 +1,84 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b0b10">
+  <title>Buy Data | Ajoks PayHub</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 20px 15px;
+      background: #0b0b10; color: white;
+      font-family: Arial, sans-serif;
+    }
+    main { max-width: 500px; margin: auto; }
+    a { color: #c5a6ff; text-decoration: none; }
+    h1 { margin-top: 28px; }
+    p { color: #aaa5b5; line-height: 1.6; }
+    .card {
+      background: #17151e; border: 1px solid #342b42;
+      padding: 20px; border-radius: 16px; margin-top: 20px;
+    }
+    label { display: block; margin: 17px 0 8px; font-size: 14px; }
+    input, select {
+      width: 100%; padding: 13px; border-radius: 9px;
+      border: 1px solid #40364e; background: #0f0d14;
+      color: white; font-size: 15px;
+    }
+    button {
+      width: 100%; padding: 14px; margin-top: 22px;
+      border: 0; border-radius: 9px;
+      background: #a77bfa; color: #170e23;
+      font-weight: bold; font-size: 15px;
+    }
+    #message { margin-top: 15px; font-size: 14px; }
+  </style>
+</head>
+<body>
+<main>
+  <a href="dashboard.html">← Back to Dashboard</a>
+  <h1>📶 Buy Data</h1>
+  <p>Select your network and data bundle.</p>
+
+  <section class="card">
+    <form id="dataForm">
+      <label for="network">Mobile network</label>
+      <select id="network" required>
+        <option value="">Choose network</option>
+        <option value="MTN">MTN</option>
+        <option value="Airtel">Airtel</option>
+        <option value="Glo">Glo</option>
+        <option value="9mobile">9mobile</option>
+      </select>
+
+      <label for="phone">Recipient phone number</label>
+      <input id="phone" type="tel" inputmode="numeric"
+        autocomplete="tel" placeholder="08012345678"
+        pattern="[0-9]{11}" maxlength="11" required>
+
+      <label for="plan">Data bundle</label>
+      <select id="plan" required>
+        <option value="">Choose a bundle</option>
+        <option value="500MB">500 MB</option>
+        <option value="1GB">1 GB</option>
+        <option value="2GB">2 GB</option>
+        <option value="5GB">5 GB</option>
+        <option value="10GB">10 GB</option>
+      </select>
+
+      <button type="submit">Continue</button>
+      <p id="message" role="status"></p>
+    </form>
+  </section>
+</main>
+<script>
+  document.getElementById("dataForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    document.getElementById("message").textContent =
+      "Selection saved on this page only. Live prices, payment and data delivery must be connected before purchases can be completed.";
+  });
+</script>
+</body>
+</html>
