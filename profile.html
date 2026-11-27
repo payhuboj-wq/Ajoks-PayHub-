@@ -1,0 +1,173 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080f1d">
+  <title>My Profile | Ajoks PayHub</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding-bottom: 95px;
+      background: #080f1d;
+      color: #f3f6fc;
+      font-family: Arial, sans-serif;
+    }
+
+    .page {
+      max-width: 650px;
+      margin: auto;
+      padding: 24px 17px;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    h1 { margin-top: 28px; }
+
+    .muted { color: #94a5bd; line-height: 1.6; }
+
+    .profile-card, .menu {
+      background: #0e192a;
+      border: 1px solid #20314e;
+      border-radius: 20px;
+      padding: 22px;
+      margin-top: 22px;
+    }
+
+    .avatar {
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      background: #2448b5;
+      display: grid;
+      place-items: center;
+      font-size: 32px;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+
+    .profile-card h2 { margin-bottom: 7px; }
+
+    .detail {
+      padding: 15px 0;
+      border-bottom: 1px solid #20314e;
+    }
+
+    .detail:last-child { border-bottom: none; }
+
+    .detail-label {
+      display: block;
+      color: #94a5bd;
+      font-size: 13px;
+      margin-bottom: 7px;
+    }
+
+    .menu a {
+      display: block;
+      padding: 16px 0;
+      border-bottom: 1px solid #20314e;
+    }
+
+    .menu a:last-child { border-bottom: none; }
+
+    .arrow {
+      float: right;
+      color: #3475ff;
+    }
+
+    .button {
+      width: 100%;
+      margin-top: 20px;
+      padding: 14px;
+      border: 0;
+      border-radius: 12px;
+      background: #2864f0;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: space-around;
+      background: #0e192a;
+      border-top: 1px solid #20314e;
+      padding: 12px 4px calc(12px + env(safe-area-inset-bottom));
+    }
+
+    .nav-item {
+      flex: 1;
+      text-align: center;
+      color: #65758e;
+      font-size: 12px;
+    }
+
+    .nav-item span {
+      display: block;
+      font-size: 22px;
+      margin-bottom: 6px;
+    }
+
+    .nav-item.active { color: #3475ff; }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <a href="dashboard.html" style="color:#a8c5ff">← Back to Dashboard</a>
+
+    <h1>My Profile</h1>
+    <p class="muted">Manage your Ajoks PayHub account.</p>
+
+    <section class="profile-card">
+      <div class="avatar">A</div>
+      <h2 id="customerName">Ajoks PayHub Customer</h2>
+      <p class="muted">Customer account</p>
+
+      <div class="detail">
+        <span class="detail-label">Email Address</span>
+        <span id="customerEmail">Not connected</span>
+      </div>
+
+      <div class="detail">
+        <span class="detail-label">Account Status</span>
+        <span>Backend connection required</span>
+      </div>
+    </section>
+
+    <section class="menu">
+      <a href="fund-wallet.html">My Wallet <span class="arrow">›</span></a>
+      <a href="transactions.html">Transaction History <span class="arrow">›</span></a>
+      <a href="orders.html">My Orders <span class="arrow">›</span></a>
+      <a href="reset-password.html">Change Password <span class="arrow">›</span></a>
+    </section>
+
+    <button class="button" id="logoutButton">Log Out</button>
+    <p class="muted" id="message" role="status"></p>
+  </main>
+
+  <nav class="bottom-nav">
+    <a class="nav-item" href="dashboard.html"><span>⌂</span>Home</a>
+    <a class="nav-item" href="buy-data.html"><span>▯</span>Numbers</a>
+    <a class="nav-item" href="subscriptions.html"><span>↗</span>Boost</a>
+    <a class="nav-item" href="fund-wallet.html"><span>▤</span>Wallet</a>
+    <a class="nav-item active" href="profile.html"><span>♙</span>Profile</a>
+  </nav>
+
+  <script>
+    document.getElementById("logoutButton").addEventListener("click", function() {
+      document.getElementById("message").textContent =
+        "Logout is not connected yet. Connect your authentication system before enabling logout.";
+    });
+  </script>
+</body>
+</html>
