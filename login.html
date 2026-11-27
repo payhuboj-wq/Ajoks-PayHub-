@@ -1,0 +1,136 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | Ajoks PayHub</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      background: #100d19;
+      color: #fff;
+      font-family: Arial, sans-serif;
+    }
+    .card {
+      width: 100%;
+      max-width: 400px;
+      padding: 28px;
+      background: #1b1727;
+      border: 1px solid #51426b;
+      border-radius: 18px;
+    }
+    h1 { text-align: center; margin-bottom: 8px; }
+    .brand { color: #b99aff; }
+    .sub { text-align: center; color: #c5bdcf; margin-bottom: 24px; }
+    label { display: block; margin: 15px 0 7px; }
+    input {
+      width: 100%;
+      padding: 13px;
+      border-radius: 9px;
+      border: 1px solid #51426b;
+      background: #100d19;
+      color: white;
+      font-size: 16px;
+    }
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 22px;
+      border: 0;
+      border-radius: 9px;
+      background: #a78bfa;
+      color: #160f24;
+      font-weight: bold;
+      font-size: 16px;
+    }
+    a { color: #c4a8ff; }
+    .links { text-align: center; line-height: 2; margin-top: 18px; }
+    #message { margin-top: 16px; text-align: center; overflow-wrap: anywhere; }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1><span class="brand">Ajoks</span> PayHub</h1>
+    <p class="sub">Log in to your account</p>
+
+    <form id="loginForm">
+      <label for="email">Email address</label>
+      <input id="email" type="email" autocomplete="email"
+             placeholder="Enter your email" required>
+
+      <label for="password">Password</label>
+      <input id="password" type="password"
+             autocomplete="current-password"
+             placeholder="Enter your password" required>
+
+      <button id="loginButton" type="submit">Log In</button>
+    </form>
+
+    <p id="message" role="status"></p>
+
+    <div class="links">
+      <a href="reset-password.html">Forgot password?</a>
+      <br>
+      Don't have an account? <a href="signup.html">Sign Up</a>
+      <br>
+      <a href="index.html">Back to Home</a>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL =
+      "https://rsrpxgmpcypyybzdidbj.supabase.co";
+
+    const SUPABASE_PUBLISHABLE_KEY =
+      "sb_publishable_5RNJKNpdSEVibrtyrTwK0A_k3Zfid3O";
+
+    const message = document.getElementById("message");
+    const button = document.getElementById("loginButton");
+
+    const client = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_PUBLISHABLE_KEY
+    );
+
+    document.getElementById("loginForm").addEventListener(
+      "submit", async function(event) {
+        event.preventDefault();
+        message.textContent = "Logging in...";
+        button.disabled = true;
+
+        try {
+          const email = document.getElementById("email").value.trim();
+          const password = document.getElementById("password").value;
+
+          const { data, error } = await client.auth.signInWithPassword({
+            email,
+            password
+          });
+
+          if (error) throw error;
+
+          if (!data.session) {
+            throw new Error("Login did not create a session. Please try again.");
+          }
+
+          message.textContent = "Login successful. Opening dashboard...";
+
+          window.location.href = "dashboard.html";
+        } catch (error) {
+          message.textContent = error.message;
+        } finally {
+          button.disabled = false;
+        }
+      }
+    );
+  </script>
+</body>
+</html>
