@@ -4,172 +4,193 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#07111f">
   <title>Electricity Payment | Ajoks PayHub</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
+    * { box-sizing: border-box; }
     body {
-      margin: 0;
-      padding: 20px;
-      background: #07111f;
-      color: #ffffff;
-      font-family: Arial, sans-serif;
+      margin: 0; padding: 20px; background: #07111f;
+      color: #fff; font-family: Arial, sans-serif;
     }
-
-    .container {
-      max-width: 480px;
-      margin: 20px auto;
-    }
-
-    .back {
-      color: #62a5ff;
-      text-decoration: none;
-      display: inline-block;
-      margin-bottom: 24px;
-    }
-
-    h1 {
-      font-size: 27px;
-      margin-bottom: 8px;
-    }
-
-    .subtitle {
-      color: #a8b7ca;
-      margin-bottom: 25px;
-      line-height: 1.5;
-    }
-
-    .card {
-      background: #101e31;
-      border: 1px solid #233650;
-      border-radius: 16px;
-      padding: 22px;
-    }
-
-    label {
-      display: block;
-      margin: 18px 0 8px;
-      font-size: 14px;
-      color: #dce8f8;
-    }
-
+    .container { max-width: 480px; margin: 20px auto; }
+    .back { color: #62a5ff; text-decoration: none; display: inline-block; margin-bottom: 24px; }
+    h1 { font-size: 27px; margin-bottom: 8px; }
+    .subtitle { color: #a8b7ca; margin-bottom: 25px; line-height: 1.5; }
+    .card { background: #101e31; border: 1px solid #233650; border-radius: 16px; padding: 22px; }
+    label { display: block; margin: 18px 0 8px; font-size: 14px; color: #dce8f8; }
     input, select {
-      width: 100%;
-      padding: 14px;
-      border: 1px solid #344963;
-      border-radius: 9px;
-      background: #091525;
-      color: white;
-      font-size: 15px;
-      outline: none;
+      width: 100%; padding: 14px; border: 1px solid #344963;
+      border-radius: 9px; background: #091525; color: white; font-size: 15px;
     }
-
-    input:focus, select:focus {
-      border-color: #3988ff;
-    }
-
     button {
-      width: 100%;
-      padding: 15px;
-      margin-top: 24px;
-      background: #2878f0;
-      color: white;
-      border: none;
-      border-radius: 10px;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
+      width: 100%; padding: 15px; margin-top: 18px; background: #2878f0;
+      color: white; border: 0; border-radius: 10px; font-size: 16px;
+      font-weight: bold; cursor: pointer;
     }
-
-    .notice {
-      color: #9fb2ca;
-      font-size: 12px;
-      line-height: 1.5;
-      margin-top: 16px;
+    button:disabled { opacity: .6; cursor: wait; }
+    .secondary { background: #243a58; }
+    .notice { color: #9fb2ca; font-size: 12px; line-height: 1.5; margin-top: 16px; }
+    #result {
+      white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.6;
+      margin-top: 18px; padding: 14px; border-radius: 10px;
+      background: #091525; color: #dce8f8; font-size: 14px;
     }
   </style>
 </head>
-
 <body>
-  <main class="container">
-    <a class="back" href="dashboard.html">← Back to Dashboard</a>
+<main class="container">
+  <a class="back" href="dashboard.html">← Back to Dashboard</a>
+  <h1>Electricity Payment</h1>
+  <p class="subtitle">Validate your meter through Ajoks PayHub Sandbox.</p>
 
-    <h1>Electricity Payment</h1>
-    <p class="subtitle">
-      Pay your electricity bill through Ajoks PayHub.
-    </p>
+  <section class="card">
+    <form id="electricityForm">
+      <label for="disco">Electricity Provider</label>
+      <select id="disco" required>
+        <option value="">Loading providers…</option>
+      </select>
+      <button type="button" id="loadProviders" class="secondary">Reload Providers</button>
 
-    <section class="card">
-      <form id="electricityForm">
-        <label for="disco">Electricity Provider</label>
-        <select id="disco" required>
-          <option value="">Select provider</option>
-          <option value="IKEDC">IKEDC</option>
-          <option value="EKEDC">EKEDC</option>
-          <option value="AEDC">AEDC</option>
-          <option value="IBEDC">IBEDC</option>
-          <option value="KEDCO">KEDCO</option>
-          <option value="PHED">PHED</option>
-          <option value="JED">JED</option>
-          <option value="KAEDCO">KAEDCO</option>
-          <option value="BEDC">BEDC</option>
-          <option value="EEDC">EEDC</option>
-        </select>
+      <label for="meterType">Meter Type</label>
+      <select id="meterType" required>
+        <option value="">Select meter type</option>
+        <option value="prepaid">Prepaid</option>
+        <option value="postpaid">Postpaid</option>
+      </select>
 
-        <label for="meterType">Meter Type</label>
-        <select id="meterType" required>
-          <option value="">Select meter type</option>
-          <option value="prepaid">Prepaid</option>
-          <option value="postpaid">Postpaid</option>
-        </select>
+      <label for="meterNumber">Meter Number</label>
+      <input id="meterNumber" type="text" inputmode="numeric"
+        autocomplete="off" placeholder="Enter meter number" required>
 
-        <label for="meterNumber">Meter Number</label>
-        <input
-          type="text"
-          id="meterNumber"
-          placeholder="Enter meter number"
-          inputmode="numeric"
-          required
-        >
+      <button type="submit" id="validateButton">Validate Meter</button>
+      <div id="result" role="status" aria-live="polite">Sign in first, then load providers.</div>
 
-        <label for="amount">Amount (₦)</label>
-        <input
-          type="number"
-          id="amount"
-          placeholder="Enter amount"
-          min="1"
-          step="1"
-          required
-        >
+      <p class="notice">
+        Sandbox validation only. No payment, wallet debit, electricity token,
+        or subscription will be made.
+      </p>
+    </form>
+  </section>
+</main>
 
-        <button type="submit">Continue</button>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = "https://rsrpxgmpcypyybzdidbj.supabase.co";
+const SUPABASE_KEY = "sb_publishable_5RNJKNpdSEVibrtyrTwK0A_k3Zfid3O";
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        <p class="notice">
-          Demo form only. No payment will be processed until a
-          payment provider and backend are connected.
-        </p>
-      </form>
-    </section>
-  </main>
+const form = document.getElementById("electricityForm");
+const disco = document.getElementById("disco");
+const result = document.getElementById("result");
+const loadButton = document.getElementById("loadProviders");
+const validateButton = document.getElementById("validateButton");
 
-  <script>
-    document.getElementById("electricityForm").addEventListener("submit", function(event) {
-      event.preventDefault();
+function show(message) {
+  result.textContent = message;
+}
 
-      const disco = document.getElementById("disco").value;
-      const meterType = document.getElementById("meterType").value;
-      const meterNumber = document.getElementById("meterNumber").value.trim();
-      const amount = Number(document.getElementById("amount").value);
+async function loadProviders() {
+  loadButton.disabled = true;
+  disco.replaceChildren(new Option("Loading providers…", ""));
+  show("Checking your sign-in and loading Sandbox providers…");
 
-      if (!disco || !meterType || !meterNumber || !Number.isFinite(amount) || amount < 1) {
-        alert("Please complete all fields correctly.");
-        return;
+  try {
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) {
+      disco.replaceChildren(new Option("Sign in to load providers", ""));
+      show("Please sign in to Ajoks PayHub first.");
+      return;
+    }
+
+    const { data, error } = await supabase.functions.invoke(
+      "paybeta-electricity-providers-sandbox-check",
+      { body: {} }
+    );
+
+    if (error) throw new Error(error.message || "Could not load providers.");
+    if (data.error) throw new Error(data.error);
+    if (data.paybeta_status !== "successful" || !Array.isArray(data.data)) {
+      throw new Error(data.message || "The provider list was not returned successfully.");
+    }
+
+    const providers = data.data.filter(p =>
+      p && typeof p.name === "string" &&
+      typeof p.slug === "string" &&
+      p.category === "electricity" && p.status !== false
+    );
+
+    disco.replaceChildren(new Option("Select provider", ""));
+    providers.forEach(p => disco.add(new Option(p.name, p.slug)));
+
+    if (!providers.length) {
+      show("No usable provider slugs were returned. Please check the Paybeta Sandbox response.");
+    } else {
+      show("Sandbox providers loaded: " + providers.length + ". Select your provider.");
+    }
+  } catch (e) {
+    disco.replaceChildren(new Option("Could not load providers", ""));
+    show("Provider loading failed: " + e.message);
+  } finally {
+    loadButton.disabled = false;
+  }
+}
+
+form.addEventListener("submit", async event => {
+  event.preventDefault();
+
+  const service = disco.value;
+  const meterType = document.getElementById("meterType").value;
+  const meterNumber = document.getElementById("meterNumber").value.trim();
+
+  if (!service || !meterType || !/^[0-9]{5,25}$/.test(meterNumber)) {
+    show("Select a provider and meter type, then enter a meter number containing 5–25 digits.");
+    return;
+  }
+
+  validateButton.disabled = true;
+  show("Validating meter with Paybeta Sandbox…");
+
+  try {
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) throw new Error("Please sign in first.");
+
+    const { data, error } = await supabase.functions.invoke(
+      "paybeta-electricity-validate-sandbox-check",
+      { body: { service, meterNumber, meterType } }
+    );
+
+    if (error) throw new Error(error.message || "Validation request failed.");
+    if (data.error) throw new Error(data.error);
+
+    if (data.paybeta_status === "successful" && data.upstream_status === 200) {
+      const lines = [
+        "Validation response: Successful",
+        "Provider: " + (disco.options[disco.selectedIndex]?.text || service),
+        "Meter number: " + (data.meterNumber || meterNumber),
+        "Meter type: " + (data.meterType || meterType)
+      ];
+      if (data.customerName) lines.push("Customer name: " + data.customerName);
+      if (data.customerAddress) lines.push("Customer address: " + data.customerAddress);
+      if (typeof data.minimumVendAmount === "number") {
+        lines.push("Minimum vending amount: ₦" + data.minimumVendAmount);
       }
+      lines.push("", data.note || "Sandbox validation only. No payment was made.");
+      show(lines.join("\n"));
+    } else {
+      show("Validation was not confirmed. " +
+        (data.message || "Paybeta did not confirm the meter.") +
+        "\n" + (data.note || "No payment or electricity token was made."));
+    }
+  } catch (e) {
+    show("Validation request failed: " + e.message +
+      "\nNo payment or electricity token was requested by this page.");
+  } finally {
+    validateButton.disabled = false;
+  }
+});
 
-      alert("Your form is complete. Electricity payments are not yet connected.");
-    });
-  </script>
+loadButton.addEventListener("click", loadProviders);
+loadProviders();
+</script>
 </body>
 </html>
