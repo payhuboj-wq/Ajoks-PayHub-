@@ -1,217 +1,289 @@
+
 import { createClient } from "npm:@supabase/supabase-js@2.95.0";
 
-const FLUTTERWAVE_API =
+const FLUTTERWAVE_API_URL =
   "https://api.flutterwave.com/v3/payments";
 
 const MAX_AMOUNT_NGN = 10_000_000;
+const EXPECTED_ORIGIN = "https://ajoks-payhub.pages.dev";
 
-function getAllowedOrigins(): Set<string> {
-  const raw = Deno.env.get("ALLOWED_ORIGINS") ?? "";
+Deno.serve(async (req: Request) => {
+  const allowedOrigins = (Deno.env.get("ALLOWED_ORIGINS") ?? "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
 
-  return new Set(
-    raw.split(",").map((value) => {
-      const origin = value.trim();
-      if (!origin) return "";
+  const origin = req.headers.get("Origin") ?? "";
+  const originAllowed =
+    allowedOrigins.includes(origin) &&
+    origin === EXPECTED_ORIGIN;
 
-      const url = new URL(origin);
-
-      if (
-        url.origin !== origin ||
-        url.protocol !== "https:"
-      ) {
-        throw new Error("Invalid origin configuration");
-      }
-
-      return origin;
-    }).filter(Boolean),
-  );
-}
-
-function response(
-  body: Record<string, unknown>,
-  status: number,
-  origin: string | null,
-  allowed: Set<string>,
-): Response {
-  const headers = new Headers({
-    "Content-Type": "application/json; charset=utf-8",
-    "Cache-Control": "no-store",
-    "Vary": "Origin",
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
+  const headers = {
+    "Content-Type": "application/json",
+    "Access-Control-Allow-Origin": originAllowed
+      ? origin
+      : "null",
     "Access-Control-Allow-Headers":
       "authorization, apikey, content-type, x-client-info",
-  });
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Vary": "Origin",
+  };
 
-  if (origin && allowed.has(origin)) {
-    headers.set("Access-Control-Allow-Origin", origin);
-  }
-
-  return new Response(JSON.stringify(body), {
-    status,
-    headers,
-  });
-}
-
-Deno.serve(async (req: Request): Promise<Response> => {
-  let allowed: Set<string>;
-
-  try {
-    allowed = getAllowedOrigins();
-  } catch {
-    return new Response("Server configuration error", {
-      status: 500,
-    });
-  }
-
-  const origin = req.headers.get("Origin");
-
-  if (origin && !allowed.has(origin)) {
-    return response({ error: "Origin not allowed" }, 403, null, allowed);
-  }
+  const respond = (status: number, data: object) =>
+    new Response(JSON.stringify(data), { status, headers });
 
   if (req.method === "OPTIONS") {
-    const headers = new Headers({
-      "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers":
-        "authorization, apikey, content-type, x-client-info",
-      "Vary": "Origin",
+    return new Response(null, {
+      status: 204,
+      headers,
     });
-
-    if (origin && allowed.has(origin)) {
-      headers.set("Access-Control-Allow-Origin", origin);
-    }
-
-    return new Response(null, { status: 204, headers });
   }
 
   if (req.method !== "POST") {
-    return response({ error: "Method not allowed" }, 405, origin, allowed);
+    return respond(405, { error: "Method not allowed." });
   }
 
-  const authorization = req.headers.get("Authorization");
-  const match = authorization?.match(/^Bearer\s+(\S+)$/i);
-  const apiKey = req.headers.get("apikey");
-  const supabaseUrl = Deno.env.get("SUPABASE_URL");
-
-  if (!match || !apiKey || !supabaseUrl) {
-    return response({ error: "Authentication required" }, 401, origin, allowed);
+  if (!originAllowed) {
+    return respond(403, { error: "Website origin not allowed." });
   }
-
-  let user;
 
   try {
-    const supabase = createClient(supabaseUrl, apiKey, {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
+    const serviceRoleKey = Deno.env.get(
+      "SUPABASE_SERVICE_ROLE_KEY",
+    );
+    const flutterwaveKey = Deno.env.get(
+      "FLUTTERWAVE_SECRET_KEY",
+    );
+    const redirectValue = Deno.env.get(
+      "FLUTTERWAVE_REDIRECT_URL",
+    );
+
+    if (
+      !supabaseUrl ||
+      !anonKey ||
+      !serviceRoleKey ||
+      !flutterwaveKey ||
+      !redirectValue
+    ) {
+      return respond(500, {
+        error: "Payment server configuration is incomplete.",
+      });
+    }
+
+    if (!flutterwaveKey.startsWith("FLWSECK_TEST-")) {
+      return respond(500, {
+        error: "This function only supports Flutterwave test mode.",
+      });
+    }
+
+    let redirectUrl: URL;
+
+    try {
+      redirectUrl = new URL(redirectValue);
+    } catch {
+      return respond(500, {
+        error: "The configured redirect URL is invalid.",
+      });
+    }
+
+    if (
+      redirectUrl.protocol !== "https:" ||
+      redirectUrl.origin !== EXPECTED_ORIGIN ||
+      redirectUrl.username ||
+      redirectUrl.password
+    ) {
+      return respond(500, {
+        error: "The redirect URL is not allowed.",
+      });
+    }
+
+    const authorization = req.headers.get("Authorization");
+
+    if (!authorization?.startsWith("Bearer ")) {
+      return respond(401, {
+        error: "Please sign in first.",
+      });
+    }
+
+    const userClient = createClient(supabaseUrl, anonKey, {
       auth: {
         persistSession: false,
         autoRefreshToken: false,
-        detectSessionInUrl: false,
+      },
+      global: {
+        headers: { Authorization: authorization },
       },
     });
 
-    const { data, error } = await supabase.auth.getUser(match[1]);
+    const token = authorization.slice(7);
+    const {
+      data: { user },
+      error: authError,
+    } = await userClient.auth.getUser(token);
 
-    if (error || !data.user?.email) {
-      return response({ error: "Valid signed-in account required" }, 401, origin, allowed);
+    if (authError || !user || !user.email) {
+      return respond(401, {
+        error: "Your session is invalid. Please sign in again.",
+      });
     }
 
-    user = data.user;
-  } catch {
-    return response({ error: "Could not verify account" }, 503, origin, allowed);
-  }
+    let body: { amount?: unknown };
 
-  if (!req.headers.get("Content-Type")?.toLowerCase().includes("application/json")) {
-    return response({ error: "Expected JSON body" }, 415, origin, allowed);
-  }
-
-  let body: { amount?: unknown };
-
-  try {
-    body = await req.json();
-  } catch {
-    return response({ error: "Invalid request body" }, 400, origin, allowed);
-  }
-
-  const amount = body?.amount;
-
-  if (
-    typeof amount !== "number" ||
-    !Number.isFinite(amount) ||
-    amount < 1 ||
-    amount > MAX_AMOUNT_NGN ||
-    Math.abs(amount * 100 - Math.round(amount * 100)) > 1e-7
-  ) {
-    return response({ error: "Invalid payment amount" }, 400, origin, allowed);
-  }
-
-  const secret = Deno.env.get("FLUTTERWAVE_SECRET_KEY");
-  const redirectUrl = Deno.env.get("FLUTTERWAVE_REDIRECT_URL");
-
-  if (!secret?.startsWith("FLWSECK_TEST-") || !redirectUrl) {
-    return response({ error: "Test payment service not configured" }, 503, origin, allowed);
-  }
-
-  try {
-    const redirect = new URL(redirectUrl);
-
-    if (redirect.protocol !== "https:") {
-      return response({ error: "Invalid redirect configuration" }, 503, origin, allowed);
+    try {
+      body = await req.json();
+    } catch {
+      return respond(400, {
+        error: "A valid JSON request is required.",
+      });
     }
-  } catch {
-    return response({ error: "Invalid redirect configuration" }, 503, origin, allowed);
-  }
 
-  const txRef = `ajokspayhub_${crypto.randomUUID()}`;
+    if (
+      typeof body.amount !== "number" &&
+      typeof body.amount !== "string"
+    ) {
+      return respond(400, {
+        error: "Enter a valid payment amount.",
+      });
+    }
 
-  try {
-    const result = await fetch(FLUTTERWAVE_API, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${secret}`,
-        "Content-Type": "application/json",
-        "Accept": "application/json",
+    const amount = Number(body.amount);
+
+    if (
+      !Number.isFinite(amount) ||
+      amount < 1 ||
+      amount > MAX_AMOUNT_NGN ||
+      Math.round(amount * 100) !== amount * 100
+    ) {
+      return respond(400, {
+        error: "Enter an amount between ₦1 and ₦10,000,000.",
+      });
+    }
+
+    const admin = createClient(supabaseUrl, serviceRoleKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
       },
-      body: JSON.stringify({
+    });
+
+    const txRef = `ajoks_${crypto.randomUUID()}`;
+
+    const { data: payment, error: insertError } = await admin
+      .from("payments")
+      .insert({
+        user_id: user.id,
+        provider: "flutterwave",
         tx_ref: txRef,
         amount,
         currency: "NGN",
-        redirect_url: redirectUrl,
-        customer: { email: user.email },
-        customizations: {
-          title: "Ajoks PayHub",
-          description: "Wallet funding",
+        status: "pending",
+      })
+      .select("id")
+      .single();
+
+    if (insertError || !payment) {
+      console.error(
+        "Could not create pending payment record:",
+        insertError,
+      );
+
+      return respond(500, {
+        error: "Could not create your payment record.",
+      });
+    }
+
+    let checkoutResponse: Response;
+
+    try {
+      checkoutResponse = await fetch(FLUTTERWAVE_API_URL, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${flutterwaveKey}`,
+          "Content-Type": "application/json",
         },
-      }),
-      signal: AbortSignal.timeout(12000),
-    });
+        body: JSON.stringify({
+          tx_ref: txRef,
+          amount,
+          currency: "NGN",
+          redirect_url: redirectUrl.toString(),
+          customer: {
+            email: user.email,
+          },
+          customizations: {
+            title: "Ajoks PayHub",
+            description: "Wallet funding",
+          },
+        }),
+      });
+    } catch (error) {
+      console.error("Flutterwave request failed:", error);
 
-    if (!result.ok) {
-      return response({ error: "Could not initialize payment" }, 502, origin, allowed);
+      return respond(502, {
+        error: "Checkout could not be reached. Your payment remains pending.",
+        tx_ref: txRef,
+      });
     }
 
-    const data = await result.json();
-    const link = data?.data?.link;
+    let result: {
+      status?: string;
+      data?: { link?: string };
+    };
+
+    try {
+      result = await checkoutResponse.json();
+    } catch {
+      return respond(502, {
+        error: "Flutterwave returned an invalid response.",
+        tx_ref: txRef,
+      });
+    }
 
     if (
-      data?.status !== "success" ||
-      typeof link !== "string"
+      !checkoutResponse.ok ||
+      result.status !== "success" ||
+      typeof result.data?.link !== "string"
     ) {
-      return response({ error: "Invalid checkout response" }, 502, origin, allowed);
+      console.error(
+        "Flutterwave checkout initialization was unsuccessful.",
+      );
+
+      return respond(502, {
+        error: "Checkout could not be initialized. Contact support if needed.",
+        tx_ref: txRef,
+      });
     }
 
-    const checkout = new URL(link);
+    let checkoutUrl: URL;
+
+    try {
+      checkoutUrl = new URL(result.data.link);
+    } catch {
+      return respond(502, {
+        error: "Flutterwave returned an invalid checkout link.",
+      });
+    }
 
     if (
-      checkout.protocol !== "https:" ||
-      checkout.hostname !== "checkout.flutterwave.com"
+      checkoutUrl.protocol !== "https:" ||
+      checkoutUrl.hostname !== "checkout.flutterwave.com"
     ) {
-      return response({ error: "Invalid checkout link" }, 502, origin, allowed);
+      return respond(502, {
+        error: "Flutterwave returned an unexpected checkout address.",
+      });
     }
 
-    return response({
-      checkout_url: checkout.href,
+    return respond(200, {
+      checkout_url: checkoutUrl.toString(),
       tx_ref: txRef,
-    }, 200, origin, allowed);
-  } catch {
-    return response({ error: "Payment service temporarily unavailable" }, 502, origin, allowed);
+      status: "pending",
+    });
+  } catch (error) {
+    console.error("Payment initialization failed:", error);
+
+    return respond(500, {
+      error: "An unexpected error occurred.",
+    });
   }
 });
