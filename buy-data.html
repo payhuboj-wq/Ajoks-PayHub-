@@ -6,46 +6,102 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0b0b10">
   <title>Buy Data | Ajoks PayHub</title>
+
   <style>
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      margin: 0; padding: 20px 15px;
-      background: #0b0b10; color: white;
+      margin: 0;
+      padding: 20px 15px;
+      background: #0b0b10;
+      color: white;
       font-family: Arial, sans-serif;
     }
-    main { max-width: 500px; margin: auto; }
-    a { color: #c5a6ff; text-decoration: none; }
-    h1 { margin-top: 28px; }
-    p { color: #aaa5b5; line-height: 1.6; }
+
+    main {
+      max-width: 500px;
+      margin: auto;
+    }
+
+    a {
+      color: #c5a6ff;
+      text-decoration: none;
+    }
+
+    h1 {
+      margin-top: 28px;
+    }
+
+    p {
+      color: #aaa5b5;
+      line-height: 1.6;
+    }
+
     .card {
-      background: #17151e; border: 1px solid #342b42;
-      padding: 20px; border-radius: 16px; margin-top: 20px;
+      background: #17151e;
+      border: 1px solid #342b42;
+      padding: 20px;
+      border-radius: 16px;
+      margin-top: 20px;
     }
-    label { display: block; margin: 17px 0 8px; font-size: 14px; }
-    input, select {
-      width: 100%; padding: 13px; border-radius: 9px;
-      border: 1px solid #40364e; background: #0f0d14;
-      color: white; font-size: 15px;
+
+    label {
+      display: block;
+      margin: 17px 0 8px;
+      font-size: 14px;
     }
+
+    input,
+    select {
+      width: 100%;
+      padding: 13px;
+      border-radius: 9px;
+      border: 1px solid #40364e;
+      background: #0f0d14;
+      color: white;
+      font-size: 15px;
+    }
+
     button {
-      width: 100%; padding: 14px; margin-top: 22px;
-      border: 0; border-radius: 9px;
-      background: #a77bfa; color: #170e23;
-      font-weight: bold; font-size: 15px;
+      width: 100%;
+      padding: 14px;
+      margin-top: 22px;
+      border: 0;
+      border-radius: 9px;
+      background: #a77bfa;
+      color: #170e23;
+      font-weight: bold;
+      font-size: 15px;
+      cursor: pointer;
     }
-    #message { margin-top: 15px; font-size: 14px; }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    #message {
+      margin-top: 15px;
+      font-size: 14px;
+      overflow-wrap: anywhere;
+    }
   </style>
 </head>
+
 <body>
 <main>
   <a href="dashboard.html">← Back to Dashboard</a>
+
   <h1>📶 Buy Data</h1>
   <p>Select your network and data bundle.</p>
 
   <section class="card">
     <form id="dataForm">
       <label for="network">Mobile network</label>
-      <select id="network" required>
+
+      <select id="network" name="network" required>
         <option value="">Choose network</option>
         <option value="MTN">MTN</option>
         <option value="Airtel">Airtel</option>
@@ -54,12 +110,22 @@
       </select>
 
       <label for="phone">Recipient phone number</label>
-      <input id="phone" type="tel" inputmode="numeric"
-        autocomplete="tel" placeholder="08012345678"
-        pattern="[0-9]{11}" maxlength="11" required>
+
+      <input
+        id="phone"
+        name="phone"
+        type="tel"
+        inputmode="numeric"
+        autocomplete="tel"
+        placeholder="08012345678"
+        pattern="[0-9]{11}"
+        maxlength="11"
+        required
+      >
 
       <label for="plan">Data bundle</label>
-      <select id="plan" required>
+
+      <select id="plan" name="plan" required>
         <option value="">Choose a bundle</option>
         <option value="500MB">500 MB</option>
         <option value="1GB">1 GB</option>
@@ -69,16 +135,174 @@
       </select>
 
       <button type="submit">Continue</button>
-      <p id="message" role="status"></p>
+
+      <p id="message" role="status" aria-live="polite"></p>
     </form>
   </section>
 </main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
-  document.getElementById("dataForm").addEventListener("submit", function(e) {
-    e.preventDefault();
-    document.getElementById("message").textContent =
-      "Selection saved on this page only. Live prices, payment and data delivery must be connected before purchases can be completed.";
+(function () {
+  "use strict";
+
+  const SUPABASE_URL =
+    "https://rsrpxgmpcypyybzdidbj.supabase.co";
+
+  const SUPABASE_PUBLISHABLE_KEY =
+    "sb_publishable_5RNJKNpdSEVibrtyrTwK0A_k3Zfid3O";
+
+  const form = document.getElementById("dataForm");
+  const message = document.getElementById("message");
+
+  if (!form || !message) {
+    console.error("Buy Data form elements were not found.");
+    return;
+  }
+
+  const button = form.querySelector('button[type="submit"]');
+
+  function showMessage(text) {
+    message.textContent = text;
+  }
+
+  form.addEventListener("submit", async function (event) {
+    event.preventDefault();
+
+    if (button) {
+      button.disabled = true;
+      button.textContent = "Saving request...";
+    }
+
+    showMessage("");
+
+    try {
+      if (!window.supabase) {
+        throw new Error(
+          "The connection library did not load. Check your internet connection and try again."
+        );
+      }
+
+      const client = window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_PUBLISHABLE_KEY
+      );
+
+      const {
+        data: sessionData,
+        error: sessionError
+      } = await client.auth.getSession();
+
+      if (sessionError) {
+        throw sessionError;
+      }
+
+      if (!sessionData.session) {
+        showMessage(
+          "Please log in first. Redirecting to login..."
+        );
+
+        window.setTimeout(function () {
+          window.location.href = "login.html";
+        }, 1200);
+
+        return;
+      }
+
+      const network =
+        document.getElementById("network").value;
+
+      const phone =
+        document.getElementById("phone").value.trim();
+
+      const plan =
+        document.getElementById("plan").value;
+
+      if (!network || !plan) {
+        throw new Error(
+          "Please select your mobile network and data bundle."
+        );
+      }
+
+      if (!/^[0-9]{11}$/.test(phone)) {
+        throw new Error(
+          "Enter a valid 11-digit Nigerian phone number."
+        );
+      }
+
+      const {
+        data,
+        error
+      } = await client.functions.invoke(
+        "create-service-order",
+        {
+          body: {
+            service: "data",
+            details: {
+              network: network,
+              phone: phone,
+              package: plan
+            },
+            amount: 0
+          }
+        }
+      );
+
+      if (error) {
+        let errorMessage =
+          error.message ||
+          "Could not save your order request.";
+
+        try {
+          if (
+            error.context &&
+            typeof error.context.json === "function"
+          ) {
+            const result = await error.context.json();
+
+            if (result && result.error) {
+              errorMessage = result.error;
+            }
+          }
+        } catch (ignored) {
+          // Keep the original error message.
+        }
+
+        throw new Error(errorMessage);
+      }
+
+      if (!data || !data.order || !data.order.id) {
+        throw new Error(
+          "The server did not confirm the saved order. Check your Orders page before trying again."
+        );
+      }
+
+      showMessage(
+        "Pending request saved! Order ID: " +
+        data.order.id +
+        ". No money was taken and no data was delivered."
+      );
+
+      form.reset();
+
+    } catch (error) {
+      console.error("Buy Data error:", error);
+
+      showMessage(
+        error.message ||
+        "Something went wrong. Please try again."
+      );
+
+    } finally {
+      if (button) {
+        button.disabled = false;
+        button.textContent = "Continue";
+      }
+    }
   });
+})();
 </script>
+
 </body>
 </html>
