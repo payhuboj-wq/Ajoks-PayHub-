@@ -5,10 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#080f1d">
   <title>Cable TV | Ajoks PayHub</title>
-
   <style>
     * { box-sizing: border-box; }
-
     body {
       margin: 0;
       padding: 20px;
@@ -16,7 +14,6 @@
       color: #f1f5f9;
       font-family: Arial, sans-serif;
     }
-
     main {
       max-width: 520px;
       margin: 25px auto;
@@ -25,30 +22,25 @@
       border: 1px solid #334155;
       border-radius: 16px;
     }
-
     h1 { color: #c4b5fd; font-size: 25px; }
     p { color: #cbd5e1; line-height: 1.5; }
-
     label {
       display: block;
       margin-top: 18px;
       margin-bottom: 7px;
       font-weight: bold;
     }
-
     input, select, button {
       width: 100%;
       padding: 13px;
       border-radius: 9px;
       font-size: 16px;
     }
-
     input, select {
       background: #080f1d;
       color: white;
       border: 1px solid #475569;
     }
-
     button {
       margin-top: 18px;
       border: 0;
@@ -57,42 +49,39 @@
       font-weight: bold;
       cursor: pointer;
     }
-
     button:disabled {
       opacity: 0.55;
       cursor: not-allowed;
     }
-
     #status, #validationResult {
       margin-top: 16px;
       padding: 12px;
       border-radius: 8px;
       background: #080f1d;
       overflow-wrap: anywhere;
+      white-space: pre-wrap;
     }
-
+    #purchase {
+      background: #0f766e;
+    }
     .note {
       margin-top: 18px;
       font-size: 13px;
       color: #cbd5e1;
     }
-
     a { color: #c4b5fd; }
   </style>
 </head>
-
 <body>
 <main>
   <h1>Cable TV Subscription</h1>
-  <p>Choose your provider, load available packages and validate your decoder account.</p>
-
+  <p>Choose your provider, load packages and validate your decoder account before testing.</p>
   <label for="provider">Cable TV Provider</label>
   <select id="provider">
     <option value="dstv">DStv</option>
     <option value="gotv">GOtv</option>
     <option value="startimes">StarTimes</option>
   </select>
-
   <label for="smartcard">Smartcard / Decoder Number</label>
   <input
     id="smartcard"
@@ -104,43 +93,38 @@
     pattern="[0-9]{5,20}"
     placeholder="Enter decoder number"
   >
-
   <button id="loadPackages" type="button">Load Packages</button>
-
   <label for="package">Choose Package</label>
   <select id="package" disabled>
     <option value="">Load packages first</option>
   </select>
-
   <label for="amount">Package Price (Sandbox)</label>
   <input id="amount" type="text" readonly placeholder="Select a package">
-
   <button id="validate" type="button">Validate Account</button>
-
+  <button id="purchase" type="button" disabled>
+    Test Cable Purchase (Sandbox)
+  </button>
   <div id="status" role="status" aria-live="polite">
     Sign in first if prompted. No purchase has been made.
   </div>
-
   <div id="validationResult" role="status" aria-live="polite">
     Account validation result will appear here.
   </div>
-
   <p class="note">
-    Sandbox testing only. This page does not make payments or activate subscriptions.
+    SANDBOX TEST ONLY. The test purchase does not debit a PayHub
+    customer wallet or create a PayHub order. Do not use real
+    customer payments for this test.
   </p>
-
   <p><a href="dashboard.html">Back to Dashboard</a></p>
 </main>
-
 <script type="module">
   import { createClient } from
     "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-
-  const SUPABASE_URL = "https://rsrpxgmpcypyybzdidbj.supabase.co";
-  const SUPABASE_KEY = "sb_publishable_5RNJKNpdSEVibrtyrTwK0A_k3Zfid3O";
-
+  const SUPABASE_URL =
+    "https://rsrpxgmpcypyybzdidbj.supabase.co";
+  const SUPABASE_KEY =
+    "sb_publishable_5RNJKNpdSEVibrtyrTwK0A_k3Zfid3O";
   const db = createClient(SUPABASE_URL, SUPABASE_KEY);
-
   const provider = document.getElementById("provider");
   const smartcard = document.getElementById("smartcard");
   const packageSelect = document.getElementById("package");
@@ -149,36 +133,44 @@
   const result = document.getElementById("validationResult");
   const loadButton = document.getElementById("loadPackages");
   const validateButton = document.getElementById("validate");
-
+  const purchaseButton = document.getElementById("purchase");
+  let validatedCustomerName = "";
+  let validatedSmartcard = "";
+  let validatedProvider = "";
   function resetValidation() {
-    result.textContent = "Validate the decoder account to see the result.";
+    validatedCustomerName = "";
+    validatedSmartcard = "";
+    validatedProvider = "";
+    purchaseButton.disabled = true;
+    result.textContent =
+      "Validate the decoder account before testing a purchase.";
   }
-
-  provider.addEventListener("change", () => {
+  function resetPackages() {
     packageSelect.innerHTML =
       '<option value="">Load packages first</option>';
     packageSelect.disabled = true;
     amount.value = "";
     resetValidation();
-  });
-
+  }
+  provider.addEventListener("change", resetPackages);
   smartcard.addEventListener("input", resetValidation);
-
+  packageSelect.addEventListener("change", () => {
+    const selected = packageSelect.selectedOptions[0];
+    amount.value = selected?.dataset.price
+      ? `₦${selected.dataset.price}`
+      : "";
+    resetValidation();
+  });
   loadButton.addEventListener("click", async () => {
     loadButton.disabled = true;
-    status.textContent = "Loading packages...";
-    packageSelect.innerHTML = '<option value="">Loading...</option>';
-    packageSelect.disabled = true;
-    amount.value = "";
-
+    status.textContent = "Loading packages from Paybeta Sandbox...";
+    resetPackages();
     try {
       const { data, error } = await db.functions.invoke(
         "paybeta-cable-bouquet-sandbox-check",
         { body: { service: provider.value } }
       );
-
       if (error) throw error;
-
       if (
         !data ||
         data.paybeta_status !== "successful" ||
@@ -186,22 +178,21 @@
       ) {
         throw new Error(data?.message || "Could not load packages.");
       }
-
       packageSelect.innerHTML =
         '<option value="">Choose a package</option>';
-
       data.packages.forEach(item => {
+        if (!item.code || !item.description) return;
         const option = document.createElement("option");
-        option.value = String(item.code ?? "");
+        option.value = String(item.code);
         option.textContent =
-          `${item.description ?? item.code} — ₦${item.price ?? "N/A"}`;
+          `${item.description} — ₦${item.price ?? "N/A"}`;
         option.dataset.price = String(item.price ?? "");
         packageSelect.appendChild(option);
       });
-
-      packageSelect.disabled = data.packages.length === 0;
+      packageSelect.disabled = packageSelect.options.length <= 1;
       status.textContent =
-        `Loaded ${data.packages.length} packages from Sandbox. No purchase made.`;
+        `Loaded ${packageSelect.options.length - 1} packages from Sandbox. ` +
+        "No purchase has been made.";
     } catch (error) {
       packageSelect.innerHTML =
         '<option value="">Could not load packages</option>';
@@ -211,26 +202,20 @@
       loadButton.disabled = false;
     }
   });
-
-  packageSelect.addEventListener("change", () => {
-    const selected = packageSelect.selectedOptions[0];
-    amount.value = selected?.dataset.price
-      ? `₦${selected.dataset.price}`
-      : "";
-  });
-
   validateButton.addEventListener("click", async () => {
     const number = smartcard.value.trim();
-
+    resetValidation();
     if (!/^[0-9]{5,20}$/.test(number)) {
       result.textContent =
         "Enter a decoder number containing 5–20 digits.";
       return;
     }
-
+    if (!packageSelect.value) {
+      result.textContent = "Load and choose a package first.";
+      return;
+    }
     validateButton.disabled = true;
     result.textContent = "Validating account with Paybeta Sandbox...";
-
     try {
       const { data, error } = await db.functions.invoke(
         "paybeta-cable-validate-sandbox-check",
@@ -241,35 +226,141 @@
           }
         }
       );
-
       if (error) throw error;
-
       if (!data) {
-        throw new Error("No response received from the validation function.");
+        throw new Error("No response from the validation function.");
       }
-
       if (
         data.paybeta_status === "successful" &&
         data.upstream_status === 200
       ) {
+        validatedCustomerName =
+          String(data.customerName || "").trim();
+        validatedSmartcard = number;
+        validatedProvider = provider.value;
         result.textContent =
-          `Validation response: Successful\n` +
-          `Provider: ${data.service || provider.value}\n` +
-          `Decoder number: ${data.smartCardNumber || number}\n` +
-          `Customer name: ${data.customerName || "Not returned by provider"}\n\n` +
-          `Sandbox validation only. No payment or subscription was made.`;
+          "Sandbox validation response: Successful\n" +
+          `Provider: ${provider.value.toUpperCase()}\n` +
+          `Decoder number: ${number}\n` +
+          `Customer name: ${validatedCustomerName || "Not returned"}\n\n` +
+          "This confirms the validation response only. " +
+          "No subscription has been purchased.";
+        // A name must be returned by the validation API before
+        // enabling the purchase test.
+        if (validatedCustomerName) {
+          purchaseButton.disabled = false;
+        } else {
+          result.textContent +=
+            "\nThe purchase test remains disabled because " +
+            "the provider did not return a customer name.";
+        }
       } else {
         result.textContent =
-          `Validation was not confirmed.\n` +
-          `${data.message || "Check the provider and decoder number, then try again."}\n` +
-          `No payment or subscription was made.`;
+          "Validation was not confirmed.\n" +
+          `${data.message || "Check the provider and decoder number."}\n` +
+          "No purchase was made.";
       }
     } catch (error) {
       result.textContent =
         `Validation request failed: ${error.message || "Please try again."}\n` +
-        `No payment or subscription was made.`;
+        "No purchase was made.";
     } finally {
       validateButton.disabled = false;
+    }
+  });
+  purchaseButton.addEventListener("click", async () => {
+    const number = smartcard.value.trim();
+    const selected = packageSelect.selectedOptions[0];
+    if (
+      !validatedCustomerName ||
+      number !== validatedSmartcard ||
+      provider.value !== validatedProvider
+    ) {
+      resetValidation();
+      result.textContent =
+        "Please validate this provider and decoder number again.";
+      return;
+    }
+    if (!packageSelect.value || !selected) {
+      result.textContent = "Choose a package first.";
+      return;
+    }
+    // Parse the displayed package price.
+    const rawPrice = selected.dataset.price;
+    const price = Number(String(rawPrice).replace(/,/g, ""));
+    if (
+      !Number.isSafeInteger(price) ||
+      price < 1 ||
+      price > 5000
+    ) {
+      result.textContent =
+        "For this test, choose a package with a whole-naira " +
+        "price between ₦1 and ₦5,000. Check the provider's " +
+        "sandbox package prices if none qualify.";
+      return;
+    }
+    const confirmed = window.confirm(
+      "SANDBOX TEST ONLY\n\n" +
+      `Provider: ${provider.value.toUpperCase()}\n` +
+      `Package: ${selected.textContent}\n` +
+      `Amount: ₦${price.toLocaleString("en-NG")}\n\n` +
+      "Send this test purchase request to Paybeta Sandbox? " +
+      "This does not change the PayHub customer wallet or orders."
+    );
+    if (!confirmed) return;
+    purchaseButton.disabled = true;
+    validateButton.disabled = true;
+    loadButton.disabled = true;
+    result.textContent =
+      "Sending test purchase to Paybeta Sandbox. Please wait...";
+    try {
+      const reference =
+        "payhub-cable-sbx-" + crypto.randomUUID();
+      const { data, error } = await db.functions.invoke(
+        "paybeta-cable-purchase-sandbox-check",
+        {
+          body: {
+            service: provider.value,
+            smartCardNumber: number,
+            amount: price,
+            packageCode: packageSelect.value,
+            customerName: validatedCustomerName,
+            reference
+          }
+        }
+      );
+      if (error) throw error;
+      if (!data) {
+        throw new Error("No response from the sandbox function.");
+      }
+      const successful =
+        data.paybeta_status === "successful" &&
+        data.upstream_status === 200;
+      result.textContent =
+        `Paybeta sandbox status: ${data.paybeta_status || "unknown"}\n` +
+        `Message: ${data.message || "No message returned."}\n` +
+        `Reference: ${data.data?.reference || reference}\n` +
+        `Amount: ₦${data.data?.amount ?? price}\n\n` +
+        (
+          successful
+            ? "Paybeta reported a successful sandbox response. " +
+              "This is not a live subscription. No PayHub wallet " +
+              "or order was changed."
+            : "Purchase was not confirmed. Do not treat this as " +
+              "a successful subscription. Check the response and " +
+              "Supabase function logs. No PayHub wallet or order " +
+              "was changed."
+        );
+    } catch (error) {
+      result.textContent =
+        `Sandbox purchase request failed: ${error.message || "Please try again."}\n` +
+        "Check your Supabase function logs. No PayHub customer " +
+        "wallet or order was changed.";
+    } finally {
+      validateButton.disabled = false;
+      loadButton.disabled = false;
+      // Require validation again before another purchase attempt.
+      resetValidation();
     }
   });
 </script>
