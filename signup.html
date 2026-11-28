@@ -1,12 +1,13 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Create Account | Ajoks PayHub</title>
+
   <style>
     * { box-sizing: border-box; }
+
     body {
       margin: 0;
       min-height: 100vh;
@@ -18,6 +19,7 @@
       color: #fff;
       font-family: Arial, sans-serif;
     }
+
     .card {
       width: 100%;
       max-width: 420px;
@@ -26,9 +28,15 @@
       border: 1px solid #38304e;
       border-radius: 18px;
     }
+
     h1 { color: #b99aff; margin-bottom: 8px; }
     .sub { color: #aaa7b8; margin-bottom: 24px; }
-    label { display: block; margin: 15px 0 7px; }
+
+    label {
+      display: block;
+      margin: 15px 0 7px;
+    }
+
     input {
       width: 100%;
       padding: 13px;
@@ -38,112 +46,208 @@
       color: white;
       font-size: 16px;
     }
+
     button {
       width: 100%;
       padding: 14px;
-      margin-top: 22px;
+      margin-top: 18px;
       border: 0;
       border-radius: 9px;
       background: #9865ff;
       color: white;
       font-size: 16px;
       font-weight: bold;
+      cursor: pointer;
     }
+
     button:disabled { opacity: .6; }
-    #message { margin-top: 16px; line-height: 1.5; overflow-wrap: anywhere; }
+
+    .secondary {
+      background: #292538;
+      border: 1px solid #494458;
+    }
+
+    #message {
+      margin-top: 16px;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+    }
+
     a { color: #c5a8ff; }
     .foot { text-align: center; margin-top: 20px; color: #aaa7b8; }
+    .hidden { display: none; }
   </style>
 </head>
+
 <body>
   <main class="card">
     <h1>Ajoks PayHub</h1>
-    <p class="sub">Create your account to get started.</p>
+    <p class="sub" id="subtitle">
+      Create your account to get started.
+    </p>
 
     <form id="signupForm">
       <label for="username">Username</label>
-      <input id="username" name="username" autocomplete="username"
-             required minlength="3" maxlength="30">
+      <input
+        id="username"
+        name="username"
+        autocomplete="username"
+        minlength="3"
+        maxlength="30"
+        required
+      >
 
       <label for="email">Email address</label>
-      <input id="email" name="email" type="email"
-             autocomplete="email" required>
+      <input
+        id="email"
+        name="email"
+        type="email"
+        autocomplete="email"
+        required
+      >
 
       <label for="password">Password</label>
-      <input id="password" name="password" type="password"
-             autocomplete="new-password" minlength="8" required>
+      <input
+        id="password"
+        name="password"
+        type="password"
+        autocomplete="new-password"
+        minlength="8"
+        required
+      >
 
       <label for="confirmPassword">Confirm password</label>
-      <input id="confirmPassword" name="confirmPassword"
-             type="password" autocomplete="new-password" required>
+      <input
+        id="confirmPassword"
+        name="confirmPassword"
+        type="password"
+        autocomplete="new-password"
+        minlength="8"
+        required
+      >
 
-      <button id="signupButton" type="submit">Create Account</button>
-      <p id="message" role="status" aria-live="polite"></p>
+      <button id="signupButton" type="submit">
+        Create Account
+      </button>
     </form>
 
-    <p class="foot">
+    <form id="otpForm" class="hidden">
+      <p>
+        Enter the verification code sent to
+        <strong id="emailDisplay"></strong>.
+      </p>
+
+      <label for="otp">Email verification code</label>
+      <input
+        id="otp"
+        name="otp"
+        type="text"
+        inputmode="numeric"
+        autocomplete="one-time-code"
+        maxlength="10"
+        required
+        placeholder="Enter your code"
+      >
+
+      <button id="verifyButton" type="submit">
+        Verify Email
+      </button>
+
+      <button
+        id="resendButton"
+        class="secondary"
+        type="button"
+      >
+        Resend Code
+      </button>
+    </form>
+
+    <p id="message" role="status" aria-live="polite"></p>
+
+    <p class="foot" id="footer">
       Already registered? <a href="login.html">Log in</a>
     </p>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <script>
-    // Supabase frontend configuration
     const SUPABASE_URL =
       "https://rsrpxgmpcypyybzdidbj.supabase.co";
 
+    // Keep your existing publishable key here.
     const SUPABASE_PUBLISHABLE_KEY =
       "sb_publishable_5RNJKNpdSEVibrtyrTwK0A_k3Zfid3O";
 
-    const form = document.getElementById("signupForm");
-    const button = document.getElementById("signupButton");
+    const client = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_PUBLISHABLE_KEY
+    );
+
+    const signupForm = document.getElementById("signupForm");
+    const otpForm = document.getElementById("otpForm");
+    const signupButton = document.getElementById("signupButton");
+    const verifyButton = document.getElementById("verifyButton");
+    const resendButton = document.getElementById("resendButton");
     const message = document.getElementById("message");
+    const subtitle = document.getElementById("subtitle");
+    const footer = document.getElementById("footer");
 
-    form.addEventListener("submit", async function (event) {
+    let pendingEmail = "";
+
+    function showMessage(text) {
+      message.textContent = text;
+    }
+
+    function setBusy(button, busy, text) {
+      button.disabled = busy;
+      if (busy) button.textContent = text;
+    }
+
+    signupForm.addEventListener("submit", async function (event) {
       event.preventDefault();
+      showMessage("");
 
-      message.textContent = "";
-      button.disabled = true;
-      button.textContent = "Creating account...";
+      if (!window.supabase) {
+        showMessage("The sign-up service could not load. Check your internet connection.");
+        return;
+      }
+
+      const username =
+        document.getElementById("username").value.trim();
+
+      const email =
+        document.getElementById("email").value.trim().toLowerCase();
+
+      const password =
+        document.getElementById("password").value;
+
+      const confirmPassword =
+        document.getElementById("confirmPassword").value;
+
+      if (username.length < 3) {
+        showMessage("Username must be at least 3 characters.");
+        return;
+      }
+
+      if (password.length < 8) {
+        showMessage("Password must be at least 8 characters.");
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        showMessage("Your passwords do not match.");
+        return;
+      }
+
+      setBusy(signupButton, true, "Creating account...");
 
       try {
-        if (!window.supabase) {
-          throw new Error("The signup library could not load. Check your internet connection and try again.");
-        }
-
-        const client = window.supabase.createClient(
-          SUPABASE_URL,
-          SUPABASE_PUBLISHABLE_KEY
-        );
-
-        const username =
-          document.getElementById("username").value.trim();
-        const email =
-          document.getElementById("email").value.trim();
-        const password =
-          document.getElementById("password").value;
-        const confirmPassword =
-          document.getElementById("confirmPassword").value;
-
-        if (username.length < 3) {
-          throw new Error("Username must be at least 3 characters.");
-        }
-
-        if (password.length < 8) {
-          throw new Error("Password must be at least 8 characters.");
-        }
-
-        if (password !== confirmPassword) {
-          throw new Error("Your passwords do not match.");
-        }
-
         const { data, error } = await client.auth.signUp({
-          email: email,
-          password: password,
+          email,
+          password,
           options: {
-            data: { username: username },
-            emailRedirectTo:
-              "https://ajoks-payhub.pages.dev/login.html"
+            data: { username }
           }
         });
 
@@ -151,31 +255,110 @@
 
         if (data.user && data.user.identities &&
             data.user.identities.length === 0) {
-          message.textContent =
-            "An account may already exist with this email. Try logging in or resetting your password.";
-          return;
+          throw new Error(
+            "An account may already exist with this email. Try logging in or resetting your password."
+          );
         }
 
         if (data.session) {
-          message.textContent =
-            "Account created successfully! You can now log in.";
-        } else {
-          message.textContent =
-            "Signup received! Check your email for the confirmation link before logging in.";
+          showMessage("Account created and signed in successfully. Opening your dashboard...");
+          window.location.replace("dashboard.html");
+          return;
         }
 
-        form.reset();
+        pendingEmail = email;
+        document.getElementById("emailDisplay").textContent = email;
 
+        signupForm.classList.add("hidden");
+        otpForm.classList.remove("hidden");
+        subtitle.textContent = "Confirm your email address.";
+        footer.innerHTML =
+          'Already registered? <a href="login.html">Log in</a>';
+
+        showMessage(
+          "Your account request was accepted. Check your email for the verification code. If no email arrives, delivery may still be restricted by Resend."
+        );
       } catch (error) {
         console.error("Signup error:", error);
-        message.textContent =
-          "Signup failed: " + (error.message || "Please try again.");
+        showMessage("Sign-up failed: " + (error.message || "Please try again."));
       } finally {
-        button.disabled = false;
-        button.textContent = "Create Account";
+        setBusy(signupButton, false, "Create Account");
+      }
+    });
+
+    otpForm.addEventListener("submit", async function (event) {
+      event.preventDefault();
+      showMessage("");
+
+      const token = document.getElementById("otp").value.trim();
+
+      if (!pendingEmail || !token) {
+        showMessage("Enter the verification code from your email.");
+        return;
+      }
+
+      setBusy(verifyButton, true, "Verifying code...");
+
+      try {
+        const { data, error } = await client.auth.verifyOtp({
+          email: pendingEmail,
+          token,
+          type: "signup"
+        });
+
+        if (error) throw error;
+
+        if (!data.session) {
+          showMessage(
+            "Your email was verified, but no session was returned. Please log in."
+          );
+          window.location.replace("login.html");
+          return;
+        }
+
+        showMessage("Email verified! Opening your dashboard...");
+        window.location.replace("dashboard.html");
+      } catch (error) {
+        console.error("OTP verification error:", error);
+        showMessage(
+          "Verification failed: " +
+          (error.message || "Check the code and try again.")
+        );
+      } finally {
+        setBusy(verifyButton, false, "Verify Email");
+      }
+    });
+
+    resendButton.addEventListener("click", async function () {
+      if (!pendingEmail) {
+        showMessage("Please start sign-up again.");
+        return;
+      }
+
+      showMessage("");
+      setBusy(resendButton, true, "Sending code...");
+
+      try {
+        const { error } = await client.auth.resend({
+          type: "signup",
+          email: pendingEmail
+        });
+
+        if (error) throw error;
+
+        showMessage(
+          "A new code was requested. Check your inbox and Spam folder."
+        );
+      } catch (error) {
+        console.error("Resend OTP error:", error);
+        showMessage(
+          "Could not resend the code: " +
+          (error.message || "Please try again later.")
+        );
+      } finally {
+        setBusy(resendButton, false, "Resend Code");
       }
     });
   </script>
 </body>
 </html>
-
