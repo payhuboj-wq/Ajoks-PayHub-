@@ -1,189 +1,205 @@
 
-
-import { createClient } from "npm:@supabase/supabase-js@2.95.0";
-
-const FLUTTERWAVE_API_URL = "https://api.flutterwave.com/v3/payments";
-const MAX_AMOUNT_NGN = 10_000_000;
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Content-Type": "application/json",
-};
-
-Deno.serve(async (req: Request) => {
-  const allowedOrigins = (Deno.env.get("ALLOWED_ORIGINS") ?? "")
-    .split(",")
-    .map((value) => value.trim())
-    .filter(Boolean);
-
-  const origin = req.headers.get("Origin") ?? "";
-
-  if (req.method === "OPTIONS") {
-    return new Response("ok", {
-      headers: {
-        ...corsHeaders,
-        "Access-Control-Allow-Origin": allowedOrigins.includes(origin)
-          ? origin
-          : allowedOrigins[0] ?? "null",
-      },
-    });
-  }
-
-  const headers = {
-    ...corsHeaders,
-    "Access-Control-Allow-Origin": allowedOrigins.includes(origin)
-      ? origin
-      : allowedOrigins[0] ?? "null",
-  };
-
-  const respond = (status: number, body: object) =>
-    new Response(JSON.stringify(body), { status, headers });
-
-  let paymentId: string | undefined;
-
-  try {
-    if (req.method !== "POST") {
-      return respond(405, { error: "Method not allowed." });
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#100b20">
+  <title>Ajoks PayHub | Digital Payments</title>
+  <meta name="description" content="Ajoks PayHub — manage your wallet, payments and digital services in one place.">
+  <style>
+    :root {
+      --bg: #100b20;
+      --panel: #1b1430;
+      --purple: #a78bfa;
+      --silver: #d8d5e4;
+      --muted: #aaa3bf;
     }
 
-    if (!allowedOrigins.includes(origin)) {
-      return respond(403, { error: "Origin not allowed." });
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      color: #fff;
+      background: radial-gradient(ellipse at top, #35205d 0%, var(--bg) 58%);
     }
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL");
-    const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
-    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    const flutterwaveKey = Deno.env.get("FLUTTERWAVE_SECRET_KEY");
-    const redirectUrl = Deno.env.get("FLUTTERWAVE_REDIRECT_URL");
-
-    if (
-      !supabaseUrl ||
-      !anonKey ||
-      !serviceRoleKey ||
-      !flutterwaveKey ||
-      !redirectUrl
-    ) {
-      return respond(500, { error: "Server configuration is incomplete." });
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 22px 7%;
+      border-bottom: 1px solid #ffffff16;
     }
 
-    if (!flutterwaveKey.startsWith("FLWSECK_TEST-")) {
-      return respond(500, {
-        error: "This function is configured for Flutterwave test mode.",
-      });
+    .brand {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 1px;
     }
 
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return respond(401, { error: "Please sign in first." });
+    .brand span { color: var(--purple); }
+
+    a { color: inherit; text-decoration: none; }
+
+    .nav {
+      display: flex;
+      gap: 18px;
+      align-items: center;
     }
 
-    const userClient = createClient(supabaseUrl, anonKey, {
-      global: { headers: { Authorization: authHeader } },
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
+    .nav a { color: var(--silver); font-size: 14px; }
 
-    const token = authHeader.slice("Bearer ".length);
-    const { data: { user }, error: authError } =
-      await userClient.auth.getUser(token);
-
-    if (authError || !user || !user.email) {
-      return respond(401, { error: "Your session is invalid. Please sign in again." });
+    main {
+      width: min(1100px, 90%);
+      margin: auto;
+      padding: 75px 0 45px;
     }
 
-    const body = await req.json();
-    const amount = Number(body.amount);
+    .hero { max-width: 720px; }
 
-    if (
-      !Number.isFinite(amount) ||
-      amount < 1 ||
-      amount > MAX_AMOUNT_NGN ||
-      Math.round(amount * 100) !== amount * 100
-    ) {
-      return respond(400, { error: "Enter a valid amount in naira." });
+    .tag {
+      color: var(--purple);
+      font-size: 12px;
+      font-weight: bold;
+      letter-spacing: 3px;
     }
 
-    const safeRedirect = new URL(redirectUrl);
-    if (
-      safeRedirect.protocol !== "https:" ||
-      safeRedirect.origin !== "https://ajoks-payhub.pages.dev"
-    ) {
-      return respond(500, { error: "Redirect URL configuration is invalid." });
+    h1 {
+      font-size: clamp(38px, 8vw, 68px);
+      line-height: 1.08;
+      margin: 20px 0;
     }
 
-    const admin = createClient(supabaseUrl, serviceRoleKey, {
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
+    h1 span { color: var(--purple); }
 
-    const txRef = `ajoks_${crypto.randomUUID()}`;
-
-    const { data: payment, error: insertError } = await admin
-      .from("payments")
-      .insert({
-        user_id: user.id,
-        provider: "flutterwave",
-        tx_ref: txRef,
-        amount,
-        currency: "NGN",
-        status: "pending",
-      })
-      .select("id")
-      .single();
-
-    if (insertError || !payment) {
-      console.error("Pending payment record creation failed:", insertError);
-      return respond(500, { error: "Could not create the payment record." });
+    p {
+      color: var(--muted);
+      line-height: 1.8;
     }
 
-    paymentId = payment.id;
-
-    const flutterwaveResponse = await fetch(FLUTTERWAVE_API_URL, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${flutterwaveKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        tx_ref: txRef,
-        amount,
-        currency: "NGN",
-        redirect_url: safeRedirect.toString(),
-        customer: {
-          email: user.email,
-        },
-        customizations: {
-          title: "Ajoks PayHub",
-          description: "Wallet funding",
-        },
-      }),
-    });
-
-    const result = await flutterwaveResponse.json();
-
-    if (
-      !flutterwaveResponse.ok ||
-      result.status !== "success" ||
-      typeof result.data?.link !== "string"
-    ) {
-      await admin.from("payments")
-        .update({ status: "failed" })
-        .eq("id", payment.id);
-
-      console.error("Flutterwave checkout initialization failed.");
-      return respond(502, { error: "Could not start checkout. Please try again." });
+    .actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin: 28px 0 45px;
     }
 
-    return respond(200, {
-      checkout_url: result.data.link,
-      tx_ref: txRef,
-    });
-  } catch (error) {
-    console.error("Payment initialization failed:", error);
+    .btn {
+      display: inline-block;
+      padding: 14px 22px;
+      border-radius: 10px;
+      font-weight: bold;
+      text-align: center;
+    }
 
-    return respond(500, {
-      error: "An unexpected error occurred while starting payment.",
-    });
-  }
-});
+    .primary {
+      color: #150d28;
+      background: var(--purple);
+    }
+
+    .secondary {
+      border: 1px solid #a78bfa70;
+      background: #ffffff08;
+    }
+
+    .services {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 16px;
+      margin-top: 28px;
+    }
+
+    .service {
+      padding: 23px;
+      border: 1px solid #a78bfa30;
+      border-radius: 16px;
+      background: #1b1430d9;
+    }
+
+    .service .symbol {
+      font-size: 26px;
+      margin-bottom: 14px;
+    }
+
+    .service h2 { font-size: 18px; }
+
+    footer {
+      padding: 25px;
+      text-align: center;
+      color: var(--muted);
+      border-top: 1px solid #ffffff16;
+      font-size: 13px;
+    }
+
+    @media (max-width: 480px) {
+      header { padding: 18px 5%; }
+      .brand { font-size: 18px; }
+      .nav { gap: 10px; }
+      .nav a { font-size: 12px; }
+      main { padding-top: 52px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a class="brand" href="index.html">AJOKS <span>PAYHUB</span></a>
+    <nav class="nav" aria-label="Main navigation">
+      <a href="login.html">Log in</a>
+      <a href="signup.html">Sign up</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="tag">YOUR DIGITAL PAYMENT PARTNER</div>
+      <h1>Payments made <span>simpler.</span></h1>
+      <p>
+        Welcome to Ajoks PayHub. Access your account, manage your wallet
+        and explore digital services from one convenient dashboard.
+      </p>
+      <div class="actions">
+        <a class="btn primary" href="signup.html">Get Started</a>
+        <a class="btn secondary" href="login.html">Access Your Account</a>
+      </div>
+    </section>
+
+    <section aria-labelledby="services-title">
+      <h2 id="services-title">Explore Our Services</h2>
+      <p>Sign in to access available services.</p>
+
+      <div class="services">
+        <article class="service">
+          <div class="symbol">▣</div>
+          <h2>Wallet Funding</h2>
+          <p>Manage your wallet and view your balance after verified transactions.</p>
+        </article>
+
+        <article class="service">
+          <div class="symbol">↗</div>
+          <h2>Payments</h2>
+          <p>Keep track of your payment records and their status.</p>
+        </article>
+
+        <article class="service">
+          <div class="symbol">◷</div>
+          <h2>Transaction History</h2>
+          <p>Review your transactions and payment activity.</p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    &copy; <span id="year"></span> Ajoks PayHub. All rights reserved.
+  </footer>
+
+  <script>
+    document.getElementById("year").textContent =
+      new Date().getFullYear();
+  </script>
+</body>
+</html>
+
