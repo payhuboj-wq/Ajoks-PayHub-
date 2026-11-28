@@ -8,7 +8,9 @@
   <title>Electricity Payment | Ajoks PayHub</title>
 
   <style>
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       margin: 0;
@@ -30,7 +32,14 @@
       text-decoration: none;
     }
 
-    h1 { font-size: 27px; margin-bottom: 8px; }
+    h1 {
+      font-size: 27px;
+      margin-bottom: 8px;
+    }
+
+    h2 {
+      font-size: 21px;
+    }
 
     .subtitle {
       color: #a8b7ca;
@@ -52,7 +61,8 @@
       color: #dce8f8;
     }
 
-    input, select {
+    input,
+    select {
       width: 100%;
       padding: 14px;
       border: 1px solid #344963;
@@ -80,8 +90,13 @@
       cursor: not-allowed;
     }
 
-    .secondary { background: #243a58; }
-    .purchase { background: #6848db; }
+    .secondary {
+      background: #243a58;
+    }
+
+    .purchase {
+      background: #6848db;
+    }
 
     .notice {
       color: #9fb2ca;
@@ -116,22 +131,29 @@
   <a class="back" href="dashboard.html">← Back to Dashboard</a>
 
   <h1>Electricity Payment</h1>
+
   <p class="subtitle">
-    Validate your meter and prepare an electricity order.
+    Validate your meter and run a controlled Paybeta Sandbox test.
   </p>
 
   <section class="card">
     <form id="electricityForm">
       <label for="disco">Electricity Provider</label>
+
       <select id="disco" required>
         <option value="">Loading providers...</option>
       </select>
 
-      <button type="button" id="loadProviders" class="secondary">
+      <button
+        type="button"
+        id="loadProviders"
+        class="secondary"
+      >
         Reload Providers
       </button>
 
       <label for="meterType">Meter Type</label>
+
       <select id="meterType" required>
         <option value="">Select meter type</option>
         <option value="prepaid">Prepaid</option>
@@ -139,6 +161,7 @@
       </select>
 
       <label for="meterNumber">Meter Number</label>
+
       <input
         id="meterNumber"
         type="text"
@@ -159,18 +182,21 @@
 
     <div class="section-title">
       <h2>Electricity Amount</h2>
+
       <p class="subtitle">
-        Enter the amount you want to use for your sandbox test.
+        This amount field is for display and form testing.
+        The fixed backend test always uses ₦2,000.
       </p>
 
       <label for="amount">Amount (₦)</label>
+
       <input
         id="amount"
         type="number"
         inputmode="decimal"
         min="1"
         step="1"
-        placeholder="Enter amount, e.g. 1000"
+        placeholder="Enter amount, e.g. 2000"
       >
 
       <button
@@ -179,14 +205,17 @@
         class="purchase"
         disabled
       >
-        Test Purchase Section
+        Run Sandbox Purchase Test
       </button>
 
       <p class="notice">
-        SANDBOX ONLY: This button does not submit an order,
-        debit a wallet, charge a payment method, or generate
-        an electricity token. A secure purchase service still
-        needs to be implemented and tested.
+        SANDBOX ONLY. The test button calls the secure
+        Paybeta Sandbox Edge Function using a fixed test
+        meter and amount. It does not use your entered
+        meter or amount for the purchase request. No
+        PayHub customer wallet or order is changed.
+        A successful sandbox response is not proof that
+        live electricity payments are ready.
       </p>
     </div>
   </section>
@@ -196,6 +225,8 @@
 
 <script>
 (function () {
+  "use strict";
+
   const result = document.getElementById("result");
   const disco = document.getElementById("disco");
   const loadButton = document.getElementById("loadProviders");
@@ -203,6 +234,8 @@
   const purchaseButton = document.getElementById("purchaseButton");
   const form = document.getElementById("electricityForm");
   const amountInput = document.getElementById("amount");
+  const meterTypeInput = document.getElementById("meterType");
+  const meterNumberInput = document.getElementById("meterNumber");
 
   const SUPABASE_URL =
     "https://rsrpxgmpcypyybzdidbj.supabase.co";
@@ -211,6 +244,7 @@
     "sb_publishable_5RNJKNpdSEVibrtyrTwK0A_k3Zfid3O";
 
   let validatedMeter = null;
+  let purchaseRunning = false;
 
   function show(message) {
     result.textContent = message;
@@ -228,10 +262,12 @@
     disco.replaceChildren(
       new Option("Service library unavailable", "")
     );
+
     show(
       "Supabase could not load. Check your internet connection " +
       "and refresh the page."
     );
+
     loadButton.disabled = true;
     validateButton.disabled = true;
     return;
@@ -262,9 +298,11 @@
 
   async function loadProviders() {
     loadButton.disabled = true;
+
     disco.replaceChildren(
       new Option("Loading providers...", "")
     );
+
     resetValidation();
     show("Checking your session and loading providers...");
 
@@ -298,7 +336,8 @@
         !Array.isArray(data.data)
       ) {
         throw new Error(
-          data.message || "Paybeta did not return a valid provider list."
+          data.message ||
+          "Paybeta did not return a valid provider list."
         );
       }
 
@@ -333,7 +372,9 @@
       disco.replaceChildren(
         new Option("Providers not loaded", "")
       );
+
       show(error.message || "Could not load providers.");
+
     } finally {
       loadButton.disabled = false;
     }
@@ -344,10 +385,8 @@
     resetValidation();
 
     const service = disco.value;
-    const meterType =
-      document.getElementById("meterType").value;
-    const meterNumber =
-      document.getElementById("meterNumber").value.trim();
+    const meterType = meterTypeInput.value;
+    const meterNumber = meterNumberInput.value.trim();
 
     if (!service) {
       show("Please select an electricity provider.");
@@ -434,7 +473,7 @@
 
         lines.push(
           "",
-          "Sandbox validation only. No payment or token was made."
+          "Sandbox validation only. No purchase has been made."
         );
 
         show(lines.join("\n"));
@@ -452,20 +491,21 @@
       show(
         error.message || "Validation failed. Please try again."
       );
+
     } finally {
       validateButton.disabled = false;
     }
   });
 
   disco.addEventListener("change", resetValidation);
-  document.getElementById("meterType").addEventListener(
-    "change", resetValidation
-  );
-  document.getElementById("meterNumber").addEventListener(
-    "input", resetValidation
-  );
+  meterTypeInput.addEventListener("change", resetValidation);
+  meterNumberInput.addEventListener("input", resetValidation);
 
-  purchaseButton.addEventListener("click", function () {
+  purchaseButton.addEventListener("click", async function () {
+    if (purchaseRunning) {
+      return;
+    }
+
     if (!validatedMeter) {
       show("Please validate your meter successfully first.");
       purchaseButton.disabled = true;
@@ -480,20 +520,76 @@
       return;
     }
 
-    show(
-      "Sandbox purchase section test\n" +
-      "Provider: " +
-      disco.options[disco.selectedIndex].text + "\n" +
-      "Meter type: " +
-      validatedMeter.meterType.toUpperCase() + "\n" +
-      "Amount entered: ₦" + amount.toLocaleString("en-NG") +
-      "\n\n" +
-      "This is only a form test. No order was created, " +
-      "no wallet was debited, no payment was taken, " +
-      "and no electricity token was generated.\n\n" +
-      "The secure purchase backend must be completed before " +
-      "real purchases can be enabled."
+    const confirmed = window.confirm(
+      "Run the FIXED Paybeta SANDBOX test now?\n\n" +
+      "Provider: Ikeja Electric\n" +
+      "Test meter: 1111111111111\n" +
+      "Meter type: PREPAID\n" +
+      "Test amount: ₦2,000\n\n" +
+      "Your entered meter and amount will NOT be used.\n" +
+      "This sends a purchase request to the sandbox endpoint only.\n\n" +
+      "Continue?"
     );
+
+    if (!confirmed) {
+      return;
+    }
+
+    purchaseRunning = true;
+    purchaseButton.disabled = true;
+    loadButton.disabled = true;
+    validateButton.disabled = true;
+
+    show(
+      "Sending the fixed test request to Paybeta Sandbox...\n" +
+      "Please wait and do not press the button again."
+    );
+
+    try {
+      // The server-side function supplies its own fixed,
+      // sandbox-only provider, meter, type and amount.
+      // No secret API key is sent from this browser.
+      const { data, error } = await supabase.functions.invoke(
+        "paybeta-electricity-purchase-sandbox-check",
+        {
+          body: {}
+        }
+      );
+
+      if (error) {
+        throw new Error(
+          error.message ||
+          "The sandbox request failed. Check the function logs."
+        );
+      }
+
+      if (!data) {
+        throw new Error(
+          "The backend returned no response."
+        );
+      }
+
+      show(
+        "PAYBETA SANDBOX PURCHASE TEST\n\n" +
+        JSON.stringify(data, null, 2) +
+        "\n\nThis request used the sandbox function only. " +
+        "No PayHub customer wallet or order was changed."
+      );
+
+    } catch (error) {
+      show(
+        "SANDBOX TEST ERROR\n\n" +
+        (error.message || "Please try again.") +
+        "\n\nCheck your login session and the Supabase function logs. " +
+        "No PayHub customer wallet or order was changed."
+      );
+
+    } finally {
+      purchaseRunning = false;
+      purchaseButton.disabled = !validatedMeter;
+      loadButton.disabled = false;
+      validateButton.disabled = false;
+    }
   });
 
   loadButton.addEventListener("click", loadProviders);
