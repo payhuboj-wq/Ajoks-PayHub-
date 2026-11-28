@@ -1,0 +1,189 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin Orders | Ajoks PayHub</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#080f1d;color:#f3f6fc;font-family:Arial,sans-serif}
+main{max-width:1000px;margin:auto;padding:22px 14px}
+a{color:#a8c5ff;text-decoration:none}
+h1{margin-top:28px}
+.muted{color:#94a5bd;line-height:1.5}
+.panel{background:#0e192a;border:1px solid #20314e;border-radius:16px;padding:16px;margin-top:18px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+button{border:0;border-radius:9px;padding:12px;background:#2864f0;color:white;font-weight:bold}
+input,select{padding:12px;border-radius:8px;border:1px solid #30435f;background:#080f1d;color:white;min-width:0}
+input{flex:1}
+.table-wrap{overflow-x:auto;margin-top:16px}
+table{border-collapse:collapse;width:100%;min-width:760px;font-size:13px}
+th,td{padding:12px 9px;text-align:left;vertical-align:top;border-bottom:1px solid #20314e}
+th{color:#a8c5ff}
+td{overflow-wrap:anywhere}
+#message{overflow-wrap:anywhere}
+</style>
+</head>
+<body>
+<main>
+<a href="dashboard.html">← Customer Dashboard</a>
+<h1>Admin — Customer Orders</h1>
+<p class="muted">View recent customer orders and their statuses.</p>
+
+<section class="panel">
+<div class="row">
+<strong id="summary">Checking access…</strong>
+<button id="refresh" type="button">Refresh orders</button>
+</div>
+<p id="message" class="muted" role="status" aria-live="polite"></p>
+
+<div class="row">
+<input id="search" type="search" placeholder="Search order or customer ID">
+<select id="statusFilter" aria-label="Filter by status">
+<option value="all">All statuses</option>
+<option value="pending">Pending</option>
+<option value="processing">Processing</option>
+<option value="completed">Completed</option>
+<option value="failed">Failed</option>
+<option value="cancelled">Cancelled</option>
+</select>
+</div>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Date</th>
+<th>Order ID</th>
+<th>Customer ID</th>
+<th>Service</th>
+<th>Details</th>
+<th>Amount</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody id="ordersBody">
+<tr><td colspan="7">Sign in to load orders.</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(async function(){
+  const ADMIN_EMAIL = "payhuboj@gmail.com";
+  const URL = "https://rsrpxgmpcypyybzdidbj.supabase.co";
+  const KEY = "sb_publishable_5RNJKNpdSEVibrtyrTwK0A_k3Zfid3O";
+
+  const message = document.getElementById("message");
+  const body = document.getElementById("ordersBody");
+  const summary = document.getElementById("summary");
+  let orders = [];
+
+  function addCell(row, value){
+    const td = document.createElement("td");
+    td.textContent = value == null ? "" : String(value);
+    row.appendChild(td);
+  }
+
+  function render(){
+    const term = document.getElementById("search").value.trim().toLowerCase();
+    const status = document.getElementById("statusFilter").value;
+
+    const filtered = orders.filter(o =>
+      (String(o.id).toLowerCase().includes(term) ||
+       String(o.user_id).toLowerCase().includes(term)) &&
+      (status === "all" || o.status === status)
+    );
+
+    body.replaceChildren();
+    summary.textContent = filtered.length + " order(s) shown";
+
+    if(!filtered.length){
+      const tr = document.createElement("tr");
+      const td = document.createElement("td");
+      td.colSpan = 7;
+      td.textContent = "No matching orders found.";
+      tr.appendChild(td);
+      body.appendChild(tr);
+      return;
+    }
+
+    filtered.forEach(o => {
+      const tr = document.createElement("tr");
+      addCell(tr, new Date(o.created_at).toLocaleString());
+      addCell(tr, o.id);
+      addCell(tr, o.user_id);
+      addCell(tr, o.order_type);
+      addCell(tr, o.description || "—");
+      addCell(tr, "₦" + Number(o.amount).toLocaleString("en-NG", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }));
+      addCell(tr, o.status);
+      body.appendChild(tr);
+    });
+  }
+
+  async function loadOrders(){
+    message.textContent = "Checking your account…";
+
+    try{
+      if(!window.supabase){
+        throw new Error("Supabase library did not load. Check your internet connection.");
+      }
+
+      const client = window.supabase.createClient(URL, KEY);
+      const {data: auth, error: authError} = await client.auth.getSession();
+
+      if(authError) throw authError;
+
+      if(!auth.session){
+        message.textContent = "Please log in first. Redirecting…";
+        setTimeout(() => location.href = "login.html", 1200);
+        return;
+      }
+
+      const email = (auth.session.user.email || "").toLowerCase();
+
+      if(email !== ADMIN_EMAIL){
+        summary.textContent = "Access denied";
+        message.textContent = "This account is not authorised to view all customer orders.";
+        body.replaceChildren();
+        return;
+      }
+
+      message.textContent = "Loading orders…";
+
+      const {data, error} = await client
+        .from("orders")
+        .select("id,user_id,order_type,description,amount,status,created_at")
+        .order("created_at", {ascending:false})
+        .limit(500);
+
+      if(error) throw error;
+
+      orders = data || [];
+      message.textContent =
+        "Signed in as " + email +
+        ". Showing up to 500 recent orders. This page is read-only.";
+
+      render();
+    }catch(error){
+      console.error(error);
+      message.textContent = error.message || "Unable to load orders.";
+    }
+  }
+
+  document.getElementById("refresh").addEventListener("click", loadOrders);
+  document.getElementById("search").addEventListener("input", render);
+  document.getElementById("statusFilter").addEventListener("change", render);
+
+  await loadOrders();
+})();
+</script>
+</body>
+</html>
