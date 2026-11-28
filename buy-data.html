@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,39 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0b0b10">
   <title>Buy Data | Ajoks PayHub</title>
-
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
+    * { box-sizing: border-box; }
     body {
       margin: 0;
       padding: 20px 15px;
       background: #0b0b10;
-      color: white;
+      color: #fff;
       font-family: Arial, sans-serif;
     }
-
     main {
-      max-width: 500px;
+      max-width: 520px;
       margin: auto;
     }
-
-    a {
-      color: #c5a6ff;
-      text-decoration: none;
-    }
-
-    h1 {
-      margin-top: 28px;
-    }
-
+    a { color: #c5a6ff; text-decoration: none; }
+    h1 { margin-top: 28px; }
     p {
       color: #aaa5b5;
       line-height: 1.6;
     }
-
     .card {
       background: #17151e;
       border: 1px solid #342b42;
@@ -46,263 +31,221 @@
       border-radius: 16px;
       margin-top: 20px;
     }
-
     label {
       display: block;
       margin: 17px 0 8px;
       font-size: 14px;
     }
-
-    input,
-    select {
-      width: 100%;
-      padding: 13px;
-      border-radius: 9px;
-      border: 1px solid #40364e;
-      background: #0f0d14;
-      color: white;
-      font-size: 15px;
-    }
-
-    button {
+    select, button {
       width: 100%;
       padding: 14px;
-      margin-top: 22px;
-      border: 0;
       border-radius: 9px;
+      font-size: 15px;
+    }
+    select {
+      border: 1px solid #40364e;
+      background: #0f0d14;
+      color: #fff;
+    }
+    button {
+      margin-top: 18px;
+      border: 0;
       background: #a77bfa;
       color: #170e23;
       font-weight: bold;
-      font-size: 15px;
       cursor: pointer;
     }
-
     button:disabled {
-      opacity: 0.6;
+      opacity: .6;
       cursor: not-allowed;
     }
-
+    .notice {
+      padding: 12px;
+      border-radius: 10px;
+      background: #211a30;
+      border: 1px solid #493866;
+      font-size: 13px;
+    }
     #message {
       margin-top: 15px;
+      overflow-wrap: anywhere;
       font-size: 14px;
+    }
+    #bundleInfo {
+      margin-top: 14px;
+      color: #d7c7ff;
       overflow-wrap: anywhere;
     }
   </style>
 </head>
-
 <body>
 <main>
   <a href="dashboard.html">← Back to Dashboard</a>
-
   <h1>📶 Buy Data</h1>
-  <p>Select your network and data bundle.</p>
-
+  <p>Choose your network to view available data bundles.</p>
   <section class="card">
     <form id="dataForm">
       <label for="network">Mobile network</label>
-
-      <select id="network" name="network" required>
-        <option value="">Choose network</option>
-        <option value="MTN">MTN</option>
-        <option value="Airtel">Airtel</option>
-        <option value="Glo">Glo</option>
-        <option value="9mobile">9mobile</option>
+      <select id="network" required>
+        <option value="mtn_data">MTN</option>
+        <option value="airtel_data">Airtel</option>
+        <option value="glo_data">Glo</option>
+        <option value="9mobile_data">9mobile</option>
       </select>
-
-      <label for="phone">Recipient phone number</label>
-
-      <input
-        id="phone"
-        name="phone"
-        type="tel"
-        inputmode="numeric"
-        autocomplete="tel"
-        placeholder="08012345678"
-        pattern="[0-9]{11}"
-        maxlength="11"
-        required
-      >
-
-      <label for="plan">Data bundle</label>
-
-      <select id="plan" name="plan" required>
-        <option value="">Choose a bundle</option>
-        <option value="500MB">500 MB</option>
-        <option value="1GB">1 GB</option>
-        <option value="2GB">2 GB</option>
-        <option value="5GB">5 GB</option>
-        <option value="10GB">10 GB</option>
+      <button id="loadButton" type="button">
+        Load Data Bundles
+      </button>
+      <label for="plan">Available bundles</label>
+      <select id="plan" required disabled>
+        <option value="">Load bundles first</option>
       </select>
-
-      <button type="submit">Continue</button>
-
+      <div id="bundleInfo" aria-live="polite"></div>
       <p id="message" role="status" aria-live="polite"></p>
     </form>
   </section>
+  <section class="card">
+    <p class="notice">
+      Sandbox preview only. Prices are supplier-returned test prices,
+      not confirmed customer selling prices. Purchasing, payment and
+      data delivery are not enabled on this page.
+    </p>
+  </section>
 </main>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <script>
 (function () {
   "use strict";
-
   const SUPABASE_URL =
     "https://rsrpxgmpcypyybzdidbj.supabase.co";
-
   const SUPABASE_PUBLISHABLE_KEY =
     "sb_publishable_5RNJKNpdSEVibrtyrTwK0A_k3Zfid3O";
-
-  const form = document.getElementById("dataForm");
+  const client = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY
+  );
+  const network = document.getElementById("network");
+  const plan = document.getElementById("plan");
+  const loadButton = document.getElementById("loadButton");
   const message = document.getElementById("message");
-
-  if (!form || !message) {
-    console.error("Buy Data form elements were not found.");
-    return;
-  }
-
-  const button = form.querySelector('button[type="submit"]');
-
+  const bundleInfo = document.getElementById("bundleInfo");
   function showMessage(text) {
     message.textContent = text;
   }
-
-  form.addEventListener("submit", async function (event) {
-    event.preventDefault();
-
-    if (button) {
-      button.disabled = true;
-      button.textContent = "Saving request...";
+  function clearBundles() {
+    plan.replaceChildren();
+    const option = document.createElement("option");
+    option.value = "";
+    option.textContent = "Load bundles first";
+    plan.appendChild(option);
+    plan.disabled = true;
+    bundleInfo.textContent = "";
+  }
+  function formatPrice(price) {
+    if (price === null || price === undefined || price === "") {
+      return "Price unavailable";
     }
-
+    const amount = Number(price);
+    if (!Number.isFinite(amount) || amount < 0) {
+      return "Price unavailable";
+    }
+    return "₦" + amount.toLocaleString("en-NG", {
+      maximumFractionDigits: 2
+    });
+  }
+  network.addEventListener("change", function () {
+    clearBundles();
     showMessage("");
-
+  });
+  plan.addEventListener("change", function () {
+    const selected = plan.selectedOptions[0];
+    if (!selected || !selected.dataset.description) {
+      bundleInfo.textContent = "";
+      return;
+    }
+    bundleInfo.textContent =
+      selected.dataset.description +
+      " — Supplier price: " + selected.dataset.price +
+      " — Code: " + selected.value;
+  });
+  loadButton.addEventListener("click", async function () {
+    loadButton.disabled = true;
+    loadButton.textContent = "Loading bundles...";
+    clearBundles();
+    showMessage("Checking the Paybeta sandbox...");
     try {
-      if (!window.supabase) {
-        throw new Error(
-          "The connection library did not load. Check your internet connection and try again."
-        );
-      }
-
-      const client = window.supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_PUBLISHABLE_KEY
-      );
-
-      const {
-        data: sessionData,
-        error: sessionError
-      } = await client.auth.getSession();
-
-      if (sessionError) {
-        throw sessionError;
-      }
-
+      const { data: sessionData, error: sessionError } =
+        await client.auth.getSession();
+      if (sessionError) throw sessionError;
       if (!sessionData.session) {
-        showMessage(
-          "Please log in first. Redirecting to login..."
-        );
-
-        window.setTimeout(function () {
-          window.location.href = "login.html";
-        }, 1200);
-
+        showMessage("Please sign in first. Open the login page.");
         return;
       }
-
-      const network =
-        document.getElementById("network").value;
-
-      const phone =
-        document.getElementById("phone").value.trim();
-
-      const plan =
-        document.getElementById("plan").value;
-
-      if (!network || !plan) {
-        throw new Error(
-          "Please select your mobile network and data bundle."
-        );
-      }
-
-      if (!/^[0-9]{11}$/.test(phone)) {
-        throw new Error(
-          "Enter a valid 11-digit Nigerian phone number."
-        );
-      }
-
-      const {
-        data,
-        error
-      } = await client.functions.invoke(
-        "create-service-order",
+      const { data, error } = await client.functions.invoke(
+        "paybeta-data-sandbox-check",
         {
-          body: {
-            service: "data",
-            details: {
-              network: network,
-              phone: phone,
-              package: plan
-            },
-            amount: 0
-          }
+          body: { service: network.value }
         }
       );
-
       if (error) {
-        let errorMessage =
-          error.message ||
-          "Could not save your order request.";
-
+        let detail = error.message || "Could not load bundles.";
         try {
-          if (
-            error.context &&
-            typeof error.context.json === "function"
-          ) {
-            const result = await error.context.json();
-
-            if (result && result.error) {
-              errorMessage = result.error;
-            }
+          if (error.context &&
+              typeof error.context.json === "function") {
+            const payload = await error.context.json();
+            if (payload && payload.error) detail = payload.error;
           }
-        } catch (ignored) {
-          // Keep the original error message.
-        }
-
-        throw new Error(errorMessage);
+        } catch (_) {}
+        throw new Error(detail);
       }
-
-      if (!data || !data.order || !data.order.id) {
-        throw new Error(
-          "The server did not confirm the saved order. Check your Orders page before trying again."
-        );
+      if (!data || !Array.isArray(data.bundles)) {
+        throw new Error("The supplier returned an unexpected response.");
       }
-
+      if (data.paybeta_status !== "successful" ||
+          data.upstream_status !== 200) {
+        throw new Error("The sandbox did not confirm a successful response.");
+      }
+      if (data.bundles.length === 0) {
+        throw new Error("No bundles were returned for this network.");
+      }
+      plan.replaceChildren();
+      const placeholder = document.createElement("option");
+      placeholder.value = "";
+      placeholder.textContent = "Choose a data bundle";
+      plan.appendChild(placeholder);
+      data.bundles.forEach(function (bundle) {
+        if (!bundle || typeof bundle.code !== "string" ||
+            !bundle.code.trim()) return;
+        const description =
+          typeof bundle.description === "string"
+            ? bundle.description
+            : "Data bundle";
+        const price = formatPrice(bundle.price);
+        const option = document.createElement("option");
+        option.value = bundle.code;
+        option.textContent = description + " — " + price;
+        option.dataset.description = description;
+        option.dataset.price = price;
+        plan.appendChild(option);
+      });
+      if (plan.options.length <= 1) {
+        clearBundles();
+        throw new Error("No usable bundle options were returned.");
+      }
+      plan.disabled = false;
       showMessage(
-        "Pending request saved! Order ID: " +
-        data.order.id +
-        ". No money was taken and no data was delivered."
+        "Loaded " + (plan.options.length - 1) +
+        " bundles. This is a read-only sandbox preview."
       );
-
-      form.reset();
-
     } catch (error) {
-      console.error("Buy Data error:", error);
-
-      showMessage(
-        error.message ||
-        "Something went wrong. Please try again."
-      );
-
+      console.error("Bundle-list error:", error);
+      showMessage(error.message || "Could not load bundles. Try again.");
     } finally {
-      if (button) {
-        button.disabled = false;
-        button.textContent = "Continue";
-      }
+      loadButton.disabled = false;
+      loadButton.textContent = "Load Data Bundles";
     }
   });
+  clearBundles();
 })();
 </script>
-
 </body>
 </html>
