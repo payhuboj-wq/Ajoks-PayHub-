@@ -1,12 +1,14 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#100d18">
   <title>Buy Airtime | Ajoks PayHub</title>
+
   <style>
     * { box-sizing: border-box; }
+
     body {
       margin: 0;
       padding: 20px;
@@ -14,11 +16,14 @@
       color: #f5f3fa;
       font-family: Arial, sans-serif;
     }
+
     .container {
       max-width: 480px;
-      margin: 30px auto;
+      margin: 25px auto;
     }
+
     a { color: #c5a7ff; text-decoration: none; }
+
     .card {
       background: #1d1928;
       border: 1px solid #55436f;
@@ -26,41 +31,86 @@
       padding: 22px;
       margin-top: 22px;
     }
+
     h1 { color: #c5a7ff; }
+
     label {
       display: block;
       margin: 17px 0 8px;
     }
-    input, select {
+
+    input, select, button {
       width: 100%;
       padding: 13px;
       border-radius: 9px;
+      font-size: 16px;
+    }
+
+    input, select {
       border: 1px solid #76658b;
       background: #100d18;
       color: white;
-      font-size: 16px;
     }
+
     button {
-      width: 100%;
-      margin-top: 22px;
-      padding: 14px;
+      margin-top: 16px;
       border: none;
-      border-radius: 9px;
       background: #9b6dff;
       color: #100d18;
-      font-size: 16px;
       font-weight: bold;
+      cursor: pointer;
     }
-    .note { color: #c5c0ce; font-size: 13px; }
+
+    button:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+    }
+
+    .note {
+      color: #c5c0ce;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    #message, #providers {
+      overflow-wrap: anywhere;
+      line-height: 1.6;
+    }
+
+    .provider {
+      padding: 10px;
+      margin-top: 8px;
+      background: #292136;
+      border-radius: 8px;
+    }
+
+    .warning {
+      padding: 12px;
+      border: 1px solid #55436f;
+      border-radius: 10px;
+      background: #211a30;
+    }
   </style>
 </head>
+
 <body>
-  <div class="container">
+  <main class="container">
     <a href="dashboard.html">← Back to Dashboard</a>
 
-    <div class="card">
+    <section class="card">
       <h1>Buy Airtime</h1>
-      <p>Recharge any supported Nigerian network.</p>
+      <p>Check supported Nigerian airtime networks.</p>
+
+      <button id="loadProviders" type="button">
+        Check Airtime Providers
+      </button>
+
+      <div id="message" role="status" aria-live="polite"></div>
+      <div id="providers"></div>
+    </section>
+
+    <section class="card">
+      <h2>Airtime Details</h2>
 
       <form id="airtimeForm">
         <label for="network">Select Network</label>
@@ -72,37 +122,170 @@
           <option value="9mobile">9mobile</option>
         </select>
 
-        <label for="phone">Phone Number</label>
-        <input id="phone" type="tel" inputmode="numeric"
-          placeholder="08012345678" pattern="[0-9]{11}" required>
+        <label for="phone">Recipient Phone Number</label>
+        <input
+          id="phone"
+          type="tel"
+          inputmode="numeric"
+          autocomplete="tel"
+          placeholder="08012345678"
+          pattern="[0-9]{11}"
+          maxlength="11"
+          required
+        >
 
         <label for="amount">Amount (₦)</label>
-        <input id="amount" type="number" min="50" max="50000"
-          step="1" placeholder="Enter amount" required>
+        <input
+          id="amount"
+          type="number"
+          min="50"
+          max="50000"
+          step="1"
+          placeholder="Enter amount"
+          required
+        >
 
-        <button type="submit">Continue</button>
-        <p class="note">
-          Demo form only. No airtime will be purchased or payment taken yet.
-        </p>
+        <button type="submit">Validate Details</button>
+        <p id="validation" role="status" aria-live="polite"></p>
       </form>
-    </div>
-  </div>
+    </section>
+
+    <section class="card">
+      <p class="note warning">
+        Sandbox testing only. Validating details does not place an
+        order. No payment, wallet debit, or airtime delivery will occur.
+      </p>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <script>
-    document.getElementById("airtimeForm").addEventListener("submit", function(event) {
-      event.preventDefault();
+    (function () {
+      const SUPABASE_URL =
+        "https://rsrpxgmpcypyybzdidbj.supabase.co";
 
-      const network = document.getElementById("network").value;
-      const phone = document.getElementById("phone").value;
-      const amount = Number(document.getElementById("amount").value);
+      const SUPABASE_KEY =
+        "sb_publishable_5RNJKNpdSEVibrtyrTwK0A_k3Zfid3O";
 
-      if (!network || !/^[0-9]{11}$/.test(phone) || amount < 50 || amount > 50000) {
-        alert("Please check your details and try again.");
-        return;
-      }
+      const db = window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+      );
 
-      alert("Your details are valid. Real airtime purchases will be enabled after provider and payment integration.");
-    });
+      const loadButton = document.getElementById("loadProviders");
+      const message = document.getElementById("message");
+      const providersBox = document.getElementById("providers");
+      const validation = document.getElementById("validation");
+
+      loadButton.addEventListener("click", async function () {
+        loadButton.disabled = true;
+        loadButton.textContent = "Checking...";
+        message.textContent = "Connecting to the sandbox...";
+        providersBox.replaceChildren();
+
+        try {
+          const { data: sessionResult, error: sessionError } =
+            await db.auth.getSession();
+
+          if (sessionError) throw sessionError;
+
+          if (!sessionResult.session) {
+            message.textContent =
+              "Please sign in to Ajoks PayHub, then try again.";
+            return;
+          }
+
+          const { data, error } = await db.functions.invoke(
+            "paybeta-sandbox-check",
+            { body: { check: "airtime_providers" } }
+          );
+
+          if (error) {
+            throw new Error(
+              error.message || "Could not check airtime providers."
+            );
+          }
+
+          if (
+            !data ||
+            data.paybeta_status !== "successful" ||
+            !Array.isArray(data.providers)
+          ) {
+            throw new Error(
+              data && data.error
+                ? data.error
+                : "The provider response was not successful."
+            );
+          }
+
+          message.textContent =
+            "Sandbox check successful. Providers returned: " +
+            data.provider_count_returned;
+
+          data.providers.forEach(function (provider) {
+            const item = document.createElement("div");
+            item.className = "provider";
+
+            const name = document.createElement("strong");
+            name.textContent = provider.name || "Unknown provider";
+            item.appendChild(name);
+
+            if (provider.category) {
+              const category = document.createElement("div");
+              category.textContent = "Category: " + provider.category;
+              item.appendChild(category);
+            }
+
+            providersBox.appendChild(item);
+          });
+
+          const note = document.createElement("p");
+          note.className = "note";
+          note.textContent =
+            "Read-only check. No airtime was purchased.";
+          providersBox.appendChild(note);
+
+        } catch (error) {
+          console.error("Airtime provider check failed:", error);
+          message.textContent =
+            error.message || "Check failed. Please try again.";
+        } finally {
+          loadButton.disabled = false;
+          loadButton.textContent = "Check Airtime Providers";
+        }
+      });
+
+      document.getElementById("airtimeForm").addEventListener(
+        "submit",
+        function (event) {
+          event.preventDefault();
+
+          const network = document.getElementById("network").value;
+          const phone = document.getElementById("phone").value.trim();
+          const amount = Number(
+            document.getElementById("amount").value
+          );
+
+          if (
+            !network ||
+            !/^[0-9]{11}$/.test(phone) ||
+            !Number.isInteger(amount) ||
+            amount < 50 ||
+            amount > 50000
+          ) {
+            validation.textContent =
+              "Check the network, 11-digit phone number, and amount.";
+            return;
+          }
+
+          validation.textContent =
+            "Details validated for " + network +
+            ", " + phone + ", ₦" + amount.toLocaleString("en-NG") +
+            ". No order or purchase was made.";
+        }
+      );
+    })();
   </script>
 </body>
 </html>
